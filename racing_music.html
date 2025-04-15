@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cazador de Notas Musicales</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #ADD8E6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 5px solid #FF69B4;
+            border-radius: 10px;
+            background: #98FB98;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #FF4500;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Puntos: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <audio id="backgroundMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mp3">
+    </audio>
+    <audio id="noteC"><source src="https://freesound.org/data/previews/269/269026_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteD"><source src="https://freesound.org/data/previews/269/269027_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteE"><source src="https://freesound.org/data/previews/269/269028_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteF"><source src="https://freesound.org/data/previews/269/269029_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteG"><source src="https://freesound.org/data/previews/269/269030_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteA"><source src="https://freesound.org/data/previews/269/269031_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="noteB"><source src="https://freesound.org/data/previews/269/269032_5015444-lq.mp3" type="audio/mp3"></audio>
+    <audio id="wrongSound"><source src="https://www.soundjay.com/buttons/beep-02.mp3" type="audio/mp3"></audio>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let gameOver = false;
+
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const noteSounds = {
+            'Do': document.getElementById('noteC'),
+            'Re': document.getElementById('noteD'),
+            'Mi': document.getElementById('noteE'),
+            'Fa': document.getElementById('noteF'),
+            'Sol': document.getElementById('noteG'),
+            'La': document.getElementById('noteA'),
+            'Si': document.getElementById('noteB')
+        };
+        const wrongSound = document.getElementById('wrongSound');
+
+        // Escala musical (C major)
+        const correctNotes = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
+        let currentNoteIndex = 0;
+        let targetNote = correctNotes[currentNoteIndex];
+
+        // Auto
+        const car = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 50,
+            height: 80,
+            speed: 5
+        };
+
+        // Notas
+        let notes = [];
+        const noteRadius = 30;
+
+        // Controles
+        let keys = { ArrowLeft: false, ArrowRight: false };
+
+        document.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+            if (e.key === 'Enter' && gameOver) {
+                resetGame();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+
+        // Crear nota
+        function createNote() {
+            const isCorrect = Math.random() < 0.7; // 70% son notas correctas
+            let noteName;
+            if (isCorrect) {
+                noteName = targetNote;
+            } else {
+                const wrongNotes = ['Do#', 'Re#', 'Fa#', 'Sol#', 'La#'];
+                noteName = wrongNotes[Math.floor(Math.random() * wrongNotes.length)];
+            }
+            notes.push({
+                x: Math.random() * (canvas.width - noteRadius * 2) + noteRadius,
+                y: -noteRadius,
+                radius: noteRadius,
+                name: noteName,
+                isCorrect: isCorrect
+            });
+        }
+
+        // Dibujar auto
+        function drawCar() {
+            ctx.fillStyle = '#1E90FF';
+            ctx.beginPath();
+            ctx.rect(car.x, car.y, car.width, car.height);
+            ctx.fill();
+            ctx.closePath();
+            // Detalle
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(car.x + 10, car.y + 10, 30, 20); // Ventana
+        }
+
+        // Dibujar nota
+        function drawNote(note) {
+            ctx.fillStyle = note.isCorrect ? '#FFD700' : '#FF4500';
+            ctx.beginPath();
+            ctx.arc(note.x, note.y, note.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+            // Nombre de la nota
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(note.name, note.x, note.y);
+        }
+
+        // Dibujar nota objetivo
+        function drawTargetNote() {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(650, 20, 130, 50);
+            ctx.fillStyle = '#000';
+            ctx.font = '30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Nota: ${targetNote}`, 715, 45);
+        }
+
+        // Actualizar juego
+        function update() {
+            if (gameOver) return;
+
+            // Mover auto
+            if (keys.ArrowLeft && car.x > 0) car.x -= car.speed;
+            if (keys.ArrowRight && car.x < canvas.width - car.width) car.x += car.speed;
+
+            // Crear notas
+            if (Math.random() < 0.03) createNote();
+
+            // Mover y verificar notas
+            notes.forEach((note, index) => {
+                note.y += 3;
+                if (note.y > canvas.height) {
+                    notes.splice(index, 1);
+                    return;
+                }
+                // Colisión con nota
+                if (
+                    car.x < note.x + note.radius &&
+                    car.x + car.width > note.x - note.radius &&
+                    car.y < note.y + note.radius &&
+                    car.y + car.height > note.y - note.radius
+                ) {
+                    if (note.isCorrect) {
+                        score += 10;
+                        scoreDisplay.textContent = `Puntos: ${score}`;
+                        if (noteSounds[note.name]) noteSounds[note.name].play();
+                        currentNoteIndex = (currentNoteIndex + 1) % correctNotes.length;
+                        targetNote = correctNotes[currentNoteIndex];
+                        notes.splice(index, 1);
+                        Swal.fire({
+                            title: '¡Bien hecho!',
+                            text: `¡Nota ${note.name} correcta! +10 puntos`,
+                            icon: 'success',
+                            timer: 1000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        wrongSound.play();
+                        gameOver = true;
+                        backgroundMusic.pause();
+                        Swal.fire({
+                            title: '¡Ups!',
+                            text: `Nota ${note.name} incorrecta. Puntos: ${score}. Presiona Enter para reiniciar.`,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            });
+        }
+
+        // Dibujar todo
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCar();
+            notes.forEach(drawNote);
+            drawTargetNote();
+        }
+
+        // Bucle del juego
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = `Puntos: ${score}`;
+            car.x = canvas.width / 2;
+            car.y = canvas.height - 100;
+            notes = [];
+            currentNoteIndex = 0;
+            targetNote = correctNotes[currentNoteIndex];
+            gameOver = false;
+            backgroundMusic.play();
+            Swal.fire({
+                title: '¡A cazar notas!',
+                text: 'Mueve el auto con las flechas para recoger la nota correcta.',
+                icon: 'info',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // Iniciar juego
+        backgroundMusic.play().catch(() => {
+            document.addEventListener('click', () => backgroundMusic.play(), { once: true });
+        });
+        Swal.fire({
+            title: '¡Cazador de Notas Musicales!',
+            text: 'Usa las flechas izquierda y derecha para mover el auto y recoger las notas correctas de la escala (Do, Re, Mi...). ¡Evita las notas incorrectas!',
+            icon: 'info',
+            confirmButtonText: '¡Jugar!'
+        }).then(() => {
+            gameLoop();
+        });
+    </script>
+</body>
+</html>
