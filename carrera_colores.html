@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrera de Colores</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #87CEEB; /* Cielo azul claro */
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Estado del juego
+        const car = {
+            x: canvas.width / 2,
+            y: canvas.height * 0.8,
+            width: 50,
+            height: 80,
+            vx: 0,
+            speed: 5
+        };
+        const track = {
+            width: canvas.width * 0.6,
+            x: canvas.width * 0.2,
+            speed: 3, // Velocidad de desplazamiento
+            color: '#FF0000' // Cambia cada nivel
+        };
+        const coins = [];
+        let score = 0;
+        let tiltX = 0;
+        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']; // Colores de pista
+
+        // Generar monedas
+        function generateCoin() {
+            const coin = {
+                x: track.x + Math.random() * track.width,
+                y: -20,
+                radius: 15,
+                active: true
+            };
+            coins.push(coin);
+        }
+
+        // Manejar inclinación
+        window.addEventListener('deviceorientation', (event) => {
+            tiltX = event.gamma / 90 * car.speed; // Normalizar inclinación
+        });
+
+        // Actualizar juego
+        function update() {
+            // Mover auto
+            car.vx = tiltX;
+            car.x += car.vx;
+
+            // Limitar auto dentro de la pista
+            if (car.x - car.width / 2 < track.x) car.x = track.x + car.width / 2;
+            if (car.x + car.width / 2 > track.x + track.width) car.x = track.x + track.width - car.width / 2;
+
+            // Mover monedas
+            coins.forEach(coin => {
+                coin.y += track.speed;
+                if (coin.y > canvas.height) coin.active = false;
+            });
+            coins.filter(coin => coin.active);
+
+            // Detectar colisión con monedas
+            coins.forEach(coin => {
+                if (coin.active) {
+                    const dx = car.x - coin.x;
+                    const dy = (car.y - car.height / 2) - coin.y;
+                    if (Math.hypot(dx, dy) < car.width / 2 + coin.radius) {
+                        coin.active = false;
+                        score += 1;
+                        // Aquí podrías agregar un sonido
+                    }
+                }
+            });
+
+            // Generar nueva moneda aleatoriamente
+            if (Math.random() < 0.02) generateCoin();
+
+            // Cambiar color de pista cada cierto tiempo
+            if (Math.random() < 0.005) {
+                track.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+        }
+
+        // Dibujar juego
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar pista
+            ctx.fillStyle = track.color;
+            ctx.fillRect(track.x, 0, track.width, canvas.height);
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(track.x, 0, track.width, canvas.height);
+
+            // Dibujar monedas
+            coins.forEach(coin => {
+                if (coin.active) {
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fill();
+                    ctx.strokeStyle = '#DAA520';
+                    ctx.stroke();
+                }
+            });
+
+            // Dibujar auto
+            ctx.fillStyle = '#00B7EB'; // Azul brillante
+            ctx.beginPath();
+            ctx.rect(car.x - car.width / 2, car.y - car.height, car.width, car.height);
+            ctx.fill();
+            // Ruedas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(car.x - car.width / 2, car.y - car.height, 10, 10);
+            ctx.fillRect(car.x + car.width / 2 - 10, car.y - car.height, 10, 10);
+            ctx.fillRect(car.x - car.width / 2, car.y - 10, 10, 10);
+            ctx.fillRect(car.x + car.width / 2 - 10, car.y - 10, 10, 10);
+            // Ojos
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(car.x - 15, car.y - car.height + 20, 5, 0, Math.PI * 2);
+            ctx.arc(car.x + 15, car.y - car.height + 20, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(car.x - 15, car.y - car.height + 20, 2, 0, Math.PI * 2);
+            ctx.arc(car.x + 15, car.y - car.height + 20, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dibujar puntaje
+            ctx.fillStyle = '#FFF';
+            ctx.font = '30px Arial';
+            ctx.fillText(`Monedas: ${score}`, 20, 40);
+        }
+
+        // Bucle principal
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>
