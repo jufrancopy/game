@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rally del Chaco Paraguayo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #3a3a3a;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+        }
+        #game-canvas {
+            border: 2px solid #000;
+            background-color: #8b6c42; /* Color de tierra/arena */
+        }
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        #restart-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #restart-btn:hover {
+            background-color: #45a049;
+        }
+        #controls {
+            margin-top: 10px;
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="500"></canvas>
+        <div id="score-display">Distancia: 0m</div>
+        <div id="game-over">
+            <h2>¡Choque!</h2>
+            <p>Distancia recorrida: <span id="final-score">0</span>m</p>
+            <button id="restart-btn">Volver a intentar</button>
+        </div>
+        <div id="controls">
+            Controles: Flechas izquierda/derecha para mover el auto</div>
+    </div>
+
+    <script>
+        // Configuración del juego
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score-display');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Variables del juego
+        let gameRunning = true;
+        let distance = 0;
+        let speed = 5;
+        let roadWidth = 300;
+        let roadX = (canvas.width - roadWidth) / 2;
+        
+        // Auto del jugador
+        const car = {
+            width: 40,
+            height: 70,
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 100,
+            speed: 6,
+            color: 'red'
+        };
+        
+        // Obstáculos
+        let obstacles = [];
+        const obstacleTypes = [
+            { name: 'tree', width: 30, height: 30, color: '#2d5f2d' },
+            { name: 'rock', width: 25, height: 25, color: '#808080' },
+            { name: 'log', width: 60, height: 20, color: '#654321' }
+        ];
+        
+        // Control del teclado
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+        
+        // Paisaje (decoración)
+        const cacti = [];
+        for (let i = 0; i < 30; i++) {
+            cacti.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 10 + Math.random() * 15
+            });
+        }
+        
+        // Generar obstáculos
+        function spawnObstacle() {
+            if (!gameRunning) return;
+            
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            const x = roadX + 20 + Math.random() * (roadWidth - 40 - type.width);
+            
+            obstacles.push({
+                x: x,
+                y: -50,
+                width: type.width,
+                height: type.height,
+                color: type.color,
+                type: type.name
+            });
+            
+            // Aumentar velocidad con el tiempo
+            if (speed < 12) {
+                speed += 0.01;
+            }
+            
+            // Programar próximo obstáculo
+            const nextSpawnTime = 800 + Math.random() * 1500 - (speed * 50);
+            setTimeout(spawnObstacle, nextSpawnTime);
+        }
+        
+        // Dibujar el camino
+        function drawRoad() {
+            // Fondo del camino
+            ctx.fillStyle = '#a87c4f'; // Color de camino de tierra
+            ctx.fillRect(roadX, 0, roadWidth, canvas.height);
+            
+            // Líneas del camino
+            ctx.setLineDash([20, 15]);
+            ctx.strokeStyle = '#white';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            
+            // Bordes del camino
+            ctx.setLineDash([]);
+            ctx.strokeStyle = '#white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(roadX, 0);
+            ctx.lineTo(roadX, canvas.height);
+            ctx.moveTo(roadX + roadWidth, 0);
+            ctx.lineTo(roadX + roadWidth, canvas.height);
+            ctx.stroke();
+        }
+        
+        // Dibujar el paisaje
+        function drawLandscape() {
+            // Dibujar cactos/árboles pequeños en el fondo
+            cacti.forEach(cactus => {
+                if (cactus.x < roadX || cactus.x > roadX + roadWidth) {
+                    ctx.fillStyle = '#2d5f2d';
+                    ctx.beginPath();
+                    ctx.rect(cactus.x, cactus.y, cactus.size, cactus.size);
+                    ctx.fill();
+                }
+                
+                // Mover cactos hacia abajo para simular movimiento
+                cactus.y += speed / 2;
+                
+                // Reposicionar si sale de la pantalla
+                if (cactus.y > canvas.height) {
+                    cactus.y = -20;
+                    cactus.x = Math.random() * canvas.width;
+                }
+            });
+        }
+        
+        // Dibujar el auto
+        function drawCar() {
+            // Carrocería
+            ctx.fillStyle = car.color;
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+            
+            // Ventanas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(car.x + 5, car.y + 10, car.width - 10, 20);
+            
+            // Ruedas
+            ctx.fillStyle = '#333';
+            ctx.fillRect(car.x - 5, car.y + 10, 5, 15);
+            ctx.fillRect(car.x + car.width, car.y + 10, 5, 15);
+            ctx.fillRect(car.x - 5, car.y + car.height - 25, 5, 15);
+            ctx.fillRect(car.x + car.width, car.y + car.height - 25, 5, 15);
+        }
+        
+        // Dibujar los obstáculos
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = obstacle.color;
+                
+                if (obstacle.type === 'tree') {
+                    // Tronco
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(obstacle.x + obstacle.width/4, obstacle.y + obstacle.height/2, obstacle.width/2, obstacle.height/2);
+                    
+                    // Copa
+                    ctx.fillStyle = '#2d5f2d';
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/3, obstacle.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (obstacle.type === 'rock') {
+                    // Roca
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Tronco caído u otro obstáculo
+                    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                }
+                
+                // Mover obstáculo
+                obstacle.y += speed;
+            });
+            
+            // Eliminar obstáculos fuera de la pantalla
+            obstacles = obstacles.filter(obs => obs.y < canvas.height);
+        }
+        
+        // Verificar colisiones
+        function checkCollisions() {
+            obstacles.forEach(obstacle => {
+                if (
+                    car.x < obstacle.x + obstacle.width &&
+                    car.x + car.width > obstacle.x &&
+                    car.y < obstacle.y + obstacle.height &&
+                    car.y + car.height > obstacle.y
+                ) {
+                    gameOver();
+                }
+            });
+            
+            // Verificar si el auto sale del camino
+            if (car.x < roadX || car.x + car.width > roadX + roadWidth) {
+                gameOver();
+            }
+        }
+        
+        // Función de fin de juego
+        function gameOver() {
+            gameRunning = false;
+            finalScoreDisplay.textContent = Math.floor(distance).toString();
+            gameOverScreen.style.display = 'block';
+        }
+        
+        // Reiniciar el juego
+        function restartGame() {
+            obstacles = [];
+            distance = 0;
+            speed = 5;
+            car.x = canvas.width / 2 - 20;
+            gameRunning = true;
+            gameOverScreen.style.display = 'none';
+            
+            // Iniciar nuevamente el spawn de obstáculos
+            setTimeout(spawnObstacle, 1000);
+        }
+        
+        // Actualizar el juego
+        function update() {
+            if (gameRunning) {
+                // Movimiento del auto
+                if (keys.ArrowLeft && car.x > roadX) {
+                    car.x -= car.speed;
+                }
+                if (keys.ArrowRight && car.x + car.width < roadX + roadWidth) {
+                    car.x += car.speed;
+                }
+                
+                // Actualizar distancia
+                distance += speed / 10;
+                scoreDisplay.textContent = `Distancia: ${Math.floor(distance)}m`;
+                
+                // Verificar colisiones
+                checkCollisions();
+            }
+        }
+        
+        // Dibujar el juego
+        function draw() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar elementos
+            drawLandscape();
+            drawRoad();
+            drawObstacles();
+            drawCar();
+            
+            // Actualizar y solicitar próximo frame
+            update();
+            requestAnimationFrame(draw);
+        }
+        
+        // Event listeners
+        window.addEventListener('keydown', e => {
+            if (e.key in keys) {
+                keys[e.key] = true;
+                e.preventDefault();
+            }
+        });
+        
+        window.addEventListener('keyup', e => {
+            if (e.key in keys) {
+                keys[e.key] = false;
+                e.preventDefault();
+            }
+        });
+        
+        restartBtn.addEventListener('click', restartGame);
+        
+        // Iniciar el juego
+        draw();
+        setTimeout(spawnObstacle, 1000);
+    </script>
+</body>
+</html>
