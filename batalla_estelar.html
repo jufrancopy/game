@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batalla Estelar</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000; /* Fondo espacial */
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <audio id="shootSound" src="https://www.soundjay.com/buttons/laser-shot-01.mp3"></audio>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const shootSound = document.getElementById('shootSound');
+
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Estado del juego
+        const playerShip = {
+            x: canvas.width / 2,
+            y: canvas.height * 0.8,
+            width: 60,
+            height: 60,
+            vx: 0,
+            vy: 0,
+            baseSpeed: 5
+        };
+        const enemies = [];
+        let score = 0;
+        let tiltX = 0, tiltY = 0;
+        let enemySpeed = 1;
+        const maxEnemySpeed = 2.5;
+        let targetColor = 'red';
+
+        const colors = [
+            { name: 'red', hex: '#FF0000' },
+            { name: 'blue', hex: '#00B7EB' },
+            { name: 'green', hex: '#00FF00' },
+            { name: 'yellow', hex: '#FFFF00' }
+        ];
+
+        // Generar naves enemigas
+        function generateEnemies(num = 4) {
+            enemies.length = 0;
+            for (let i = 0; i < num; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const enemy = {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height * 0.5),
+                    size: 50,
+                    color: color.hex,
+                    colorName: color.name,
+                    vx: (Math.random() - 0.5) * enemySpeed,
+                    vy: (Math.random() - 0.5) * enemySpeed
+                };
+                enemies.push(enemy);
+            }
+            // Asegurar que el color objetivo esté presente
+            if (!enemies.some(e => e.colorName === targetColor)) {
+                const color = colors.find(c => c.name === targetColor);
+                enemies[0] = {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height * 0.5),
+                    size: 50,
+                    color: color.hex,
+                    colorName: color.name,
+                    vx: (Math.random() - 0.5) * enemySpeed,
+                    vy: (Math.random() - 0.5) * enemySpeed
+                };
+            }
+        }
+        generateEnemies();
+
+        // Seleccionar nuevo color objetivo
+        function newTargetColor() {
+            targetColor = colors[Math.floor(Math.random() * colors.length)].name;
+            generateEnemies();
+        }
+
+        // Manejar inclinación
+        window.addEventListener('deviceorientation', (event) => {
+            tiltX = event.gamma / 90 * playerShip.baseSpeed;
+            tiltY = event.beta / 90 * playerShip.baseSpeed;
+        });
+
+        // Actualizar juego
+        function update() {
+            // Mover nave del jugador
+            playerShip.vx = tiltX;
+            playerShip.vy = tiltY;
+            playerShip.x += playerShip.vx;
+            playerShip.y += playerShip.vy;
+
+            // Limitar nave dentro del canvas
+            playerShip.x = Math.max(playerShip.width / 2, Math.min(canvas.width - playerShip.width / 2, playerShip.x));
+            playerShip.y = Math.max(playerShip.height / 2, Math.min(canvas.height - playerShip.height / 2, playerShip.y));
+
+            // Mover naves enemigas
+            enemies.forEach(enemy => {
+                enemy.x += enemy.vx;
+                enemy.y += enemy.vy;
+                // Rebote en bordes
+                if (enemy.x - enemy.size / 2 < 0 || enemy.x + enemy.size / 2 > canvas.width) enemy.vx *= -1;
+                if (enemy.y - enemy.size / 2 < 0 || enemy.y + enemy.size / 2 > canvas.height) enemy.vy *= -1;
+            });
+
+            // Detectar colisión con enemigos
+            enemies.forEach(enemy => {
+                const dx = playerShip.x - enemy.x;
+                const dy = playerShip.y - enemy.y;
+                if (Math.hypot(dx, dy) < playerShip.width / 2 + enemy.size / 2) {
+                    if (enemy.colorName === targetColor) {
+                        score += 1;
+                        enemySpeed = Math.min(enemySpeed + 0.05, maxEnemySpeed);
+                        shootSound.play().catch(e => console.log("Error sonido:", e));
+                        newTargetColor();
+                    }
+                }
+            });
+        }
+
+        // Dibujar juego
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fondo espacial con estrellas
+            ctx.fillStyle = '#FFF';
+            for (let i = 0; i < 50; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Dibujar naves enemigas (TIE Fighters simplificados)
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                // Cuerpo
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                // Alas
+                ctx.fillRect(enemy.x - enemy.size / 2 - 10, enemy.y - enemy.size / 2, 10, enemy.size);
+                ctx.fillRect(enemy.x + enemy.size / 2, enemy.y - enemy.size / 2, 10, enemy.size);
+                // Ojos
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(enemy.x - 10, enemy.y - 10, 5, 0, Math.PI * 2);
+                ctx.arc(enemy.x + 10, enemy.y - 10, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(enemy.x - 10, enemy.y - 10, 2, 0, Math.PI * 2);
+                ctx.arc(enemy.x + 10, enemy.y - 10, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Dibujar nave del jugador (X-Wing simplificado)
+            ctx.fillStyle = '#C0C0C0'; // Gris plateado
+            ctx.beginPath();
+            ctx.moveTo(playerShip.x, playerShip.y - playerShip.height / 2);
+            ctx.lineTo(playerShip.x - playerShip.width / 2, playerShip.y + playerShip.height / 2);
+            ctx.lineTo(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2);
+            ctx.closePath();
+            ctx.fill();
+            // Alas
+            ctx.fillRect(playerShip.x - playerShip.width / 2 - 10, playerShip.y - 10, 10, 20);
+            ctx.fillRect(playerShip.x + playerShip.width / 2, playerShip.y - 10, 10, 20);
+            // Ojos
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(playerShip.x - 10, playerShip.y - 10, 5, 0, Math.PI * 2);
+            ctx.arc(playerShip.x + 10, playerShip.y - 10, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(playerShip.x - 10, playerShip.y - 10, 2, 0, Math.PI * 2);
+            ctx.arc(playerShip.x + 10, playerShip.y - 10, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dibujar objetivo
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(10, 10, 100, 100);
+            const target = colors.find(c => c.name === targetColor);
+            ctx.fillStyle = target.hex;
+            ctx.beginPath();
+            ctx.arc(60, 60, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText(target.name.charAt(0).toUpperCase() + target.name.slice(1), 10, 130);
+
+            // Dibujar puntaje
+            ctx.fillStyle = '#FFF';
+            ctx.font = '30px Arial';
+            ctx.fillText(`Puntos: ${score}`, 10, canvas.height - 20);
+        }
+
+        // Bucle principal
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>
