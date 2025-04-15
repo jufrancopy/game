@@ -20,9 +20,11 @@
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <audio id="coinSound" src="https://www.soundjay.com/buttons/coin-collect-01.mp3"></audio>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const coinSound = document.getElementById('coinSound');
 
         // Ajustar tamaño del canvas
         function resizeCanvas() {
@@ -39,18 +41,19 @@
             width: 50,
             height: 80,
             vx: 0,
-            speed: 5
+            baseSpeed: 5
         };
         const track = {
             width: canvas.width * 0.6,
             x: canvas.width * 0.2,
-            speed: 3, // Velocidad de desplazamiento
-            color: '#FF0000' // Cambia cada nivel
+            speed: 3, // Velocidad inicial
+            maxSpeed: 6, // Límite para bebés
+            color: '#FF0000'
         };
         const coins = [];
         let score = 0;
         let tiltX = 0;
-        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']; // Colores de pista
+        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00'];
 
         // Generar monedas
         function generateCoin() {
@@ -65,12 +68,13 @@
 
         // Manejar inclinación
         window.addEventListener('deviceorientation', (event) => {
-            tiltX = event.gamma / 90 * car.speed; // Normalizar inclinación
+            tiltX = event.gamma / 90 * car.baseSpeed; // Ajustar con velocidad base
         });
 
         // Actualizar juego
         function update() {
-            // Mover auto
+            // Ajustar velocidad del auto según la pista
+            car.baseSpeed = 5 + track.speed * 0.5; // Escala con la pista
             car.vx = tiltX;
             car.x += car.vx;
 
@@ -93,7 +97,8 @@
                     if (Math.hypot(dx, dy) < car.width / 2 + coin.radius) {
                         coin.active = false;
                         score += 1;
-                        // Aquí podrías agregar un sonido
+                        track.speed = Math.min(track.speed + 0.1, track.maxSpeed); // Aumentar velocidad
+                        coinSound.play().catch(e => console.log("Error al reproducir sonido:", e));
                     }
                 }
             });
@@ -101,7 +106,7 @@
             // Generar nueva moneda aleatoriamente
             if (Math.random() < 0.02) generateCoin();
 
-            // Cambiar color de pista cada cierto tiempo
+            // Cambiar color de pista
             if (Math.random() < 0.005) {
                 track.color = colors[Math.floor(Math.random() * colors.length)];
             }
@@ -131,7 +136,7 @@
             });
 
             // Dibujar auto
-            ctx.fillStyle = '#00B7EB'; // Azul brillante
+            ctx.fillStyle = '#00B7EB';
             ctx.beginPath();
             ctx.rect(car.x - car.width / 2, car.y - car.height, car.width, car.height);
             ctx.fill();
