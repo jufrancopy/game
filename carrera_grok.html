@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrera de Autos para Bebés</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #87CEEB;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 5px solid #FFD700;
+            border-radius: 10px;
+            background: #90EE90;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #FF4500;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Puntos: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <audio id="backgroundMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+    </audio>
+    <audio id="starSound">
+        <source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mp3">
+    </audio>
+    <audio id="crashSound">
+        <source src="https://www.soundjay.com/mechanical/click-01.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let gameOver = false;
+
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const starSound = document.getElementById('starSound');
+        const crashSound = document.getElementById('crashSound');
+
+        // Auto
+        const car = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 50,
+            height: 80,
+            speed: 5
+        };
+
+        // Estrellas y obstáculos
+        let stars = [];
+        let obstacles = [];
+        const starRadius = 20;
+        const obstacleSize = 40;
+
+        // Controles
+        let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
+
+        document.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+            if (e.key === 'Enter' && gameOver) {
+                resetGame();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+
+        // Crear estrella
+        function createStar() {
+            stars.push({
+                x: Math.random() * (canvas.width - starRadius * 2) + starRadius,
+                y: -starRadius,
+                radius: starRadius
+            });
+        }
+
+        // Crear obstáculo
+        function createObstacle() {
+            obstacles.push({
+                x: Math.random() * (canvas.width - obstacleSize),
+                y: -obstacleSize,
+                width: obstacleSize,
+                height: obstacleSize
+            });
+        }
+
+        // Dibujar auto
+        function drawCar() {
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.rect(car.x, car.y, car.width, car.height);
+            ctx.fill();
+            ctx.closePath();
+            // Detalles simples
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(car.x + 10, car.y + 10, 30, 20); // Ventana
+        }
+
+        // Dibujar estrella
+        function drawStar(star) {
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Dibujar obstáculo
+        function drawObstacle(obstacle) {
+            ctx.fillStyle = '#A52A2A';
+            ctx.beginPath();
+            ctx.rect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Actualizar juego
+        function update() {
+            if (gameOver) return;
+
+            // Mover auto
+            if (keys.ArrowLeft && car.x > 0) car.x -= car.speed;
+            if (keys.ArrowRight && car.x < canvas.width - car.width) car.x += car.speed;
+            if (keys.ArrowUp && car.y > 0) car.y -= car.speed;
+            if (keys.ArrowDown && car.y < canvas.height - car.height) car.y += car.speed;
+
+            // Crear estrellas y obstáculos
+            if (Math.random() < 0.02) createStar();
+            if (Math.random() < 0.01) createObstacle();
+
+            // Mover y verificar estrellas
+            stars.forEach((star, index) => {
+                star.y += 3;
+                if (star.y > canvas.height) {
+                    stars.splice(index, 1);
+                    return;
+                }
+                // Colisión con estrella
+                if (
+                    car.x < star.x + star.radius &&
+                    car.x + car.width > star.x - star.radius &&
+                    car.y < star.y + star.radius &&
+                    car.y + car.height > star.y - star.radius
+                ) {
+                    score += 10;
+                    scoreDisplay.textContent = `Puntos: ${score}`;
+                    starSound.play();
+                    stars.splice(index, 1);
+                    Swal.fire({
+                        title: '¡Estrella!',
+                        text: '+10 puntos',
+                        icon: 'success',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+
+            // Mover y verificar obstáculos
+            obstacles.forEach((obstacle, index) => {
+                obstacle.y += 4;
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                    return;
+                }
+                // Colisión con obstáculo
+                if (
+                    car.x < obstacle.x + obstacle.width &&
+                    car.x + car.width > obstacle.x &&
+                    car.y < obstacle.y + obstacle.height &&
+                    car.y + car.height > obstacle.y
+                ) {
+                    crashSound.play();
+                    gameOver = true;
+                    backgroundMusic.pause();
+                    Swal.fire({
+                        title: '¡Oh no!',
+                        text: `Juego terminado. Puntos: ${score}. Presiona Enter para reiniciar.`,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+
+        // Dibujar todo
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCar();
+            stars.forEach(drawStar);
+            obstacles.forEach(drawObstacle);
+        }
+
+        // Bucle del juego
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = `Puntos: ${score}`;
+            car.x = canvas.width / 2;
+            car.y = canvas.height - 100;
+            stars = [];
+            obstacles = [];
+            gameOver = false;
+            backgroundMusic.play();
+            Swal.fire({
+                title: '¡Vamos otra vez!',
+                text: 'Usa las flechas para mover el auto.',
+                icon: 'info',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // Iniciar juego
+        backgroundMusic.play().catch(() => {
+            // En caso de que el navegador bloquee el autoplay
+            document.addEventListener('click', () => backgroundMusic.play(), { once: true });
+        });
+        Swal.fire({
+            title: '¡Carrera de Autos!',
+            text: 'Usa las flechas para mover el auto y recoge estrellas. ¡Evita los obstáculos!',
+            icon: 'info',
+            confirmButtonText: '¡Jugar!'
+        }).then(() => {
+            gameLoop();
+        });
+    </script>
+</body>
+</html>
