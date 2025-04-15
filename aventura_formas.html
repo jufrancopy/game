@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura de Formas</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #ADD8E6; /* Azul claro */
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <audio id="shapeSound" src="https://www.soundjay.com/buttons/coin-collect-01.mp3"></audio>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const shapeSound = document.getElementById('shapeSound');
+
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Estado del juego
+        const star = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 20,
+            vx: 0,
+            vy: 0,
+            baseSpeed: 5
+        };
+        const shapes = [];
+        let score = 0;
+        let tiltX = 0, tiltY = 0;
+        let targetShape = 'circle';
+        let shapeSpeed = 1; // Velocidad inicial de movimiento de formas
+        const maxShapeSpeed = 2.5; // Límite para bebés
+
+        const shapeTypes = [
+            { name: 'circle', color: '#FF0000', draw: (x, y, size) => {
+                ctx.beginPath();
+                ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }},
+            { name: 'square', color: '#00FF00', draw: (x, y, size) => {
+                ctx.fillRect(x - size / 2, y - size / 2, size, size);
+            }},
+            { name: 'triangle', color: '#0000FF', draw: (x, y, size) => {
+                ctx.beginPath();
+                ctx.moveTo(x, y - size / 2);
+                ctx.lineTo(x - size / 2, y + size / 2);
+                ctx.lineTo(x + size / 2, y + size / 2);
+                ctx.closePath();
+                ctx.fill();
+            }},
+            { name: 'star', color: '#FFFF00', draw: (x, y, size) => {
+                const spikes = 5;
+                const step = Math.PI / spikes;
+                ctx.beginPath();
+                for (let i = 0; i < spikes * 2; i++) {
+                    const radius = i % 2 === 0 ? size / 2 : size / 4;
+                    const angle = i * step - Math.PI / 2;
+                    ctx.lineTo(x + radius * Math.cos(angle), y + radius * Math.sin(angle));
+                }
+                ctx.closePath();
+                ctx.fill();
+            }}
+        ];
+
+        // Generar formas
+        function generateShapes(num = 4) {
+            shapes.length = 0;
+            for (let i = 0; i < num; i++) {
+                const type = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+                const shape = {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 50,
+                    type: type.name,
+                    color: type.color,
+                    draw: type.draw,
+                    vx: (Math.random() - 0.5) * shapeSpeed,
+                    vy: (Math.random() - 0.5) * shapeSpeed
+                };
+                shapes.push(shape);
+            }
+            // Asegurar que la forma objetivo esté presente
+            if (!shapes.some(s => s.type === targetShape)) {
+                const type = shapeTypes.find(t => t.name === targetShape);
+                shapes[0] = {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 50,
+                    type: type.name,
+                    color: type.color,
+                    draw: type.draw,
+                    vx: (Math.random() - 0.5) * shapeSpeed,
+                    vy: (Math.random() - 0.5) * shapeSpeed
+                };
+            }
+        }
+        generateShapes();
+
+        // Seleccionar nueva forma objetivo
+        function newTargetShape() {
+            targetShape = shapeTypes[Math.floor(Math.random() * shapeTypes.length)].name;
+            generateShapes();
+        }
+
+        // Manejar inclinación
+        window.addEventListener('deviceorientation', (event) => {
+            tiltX = event.gamma / 90 * star.baseSpeed;
+            tiltY = event.beta / 90 * star.baseSpeed;
+        });
+
+        // Actualizar juego
+        function update() {
+            // Mover estrella
+            star.vx = tiltX;
+            star.vy = tiltY;
+            star.x += star.vx;
+            star.y += star.vy;
+
+            // Limitar estrella dentro del canvas
+            star.x = Math.max(star.radius, Math.min(canvas.width - star.radius, star.x));
+            star.y = Math.max(star.radius, Math.min(canvas.height - star.radius, star.y));
+
+            // Mover formas
+            shapes.forEach(shape => {
+                shape.x += shape.vx;
+                shape.y += shape.vy;
+                // Rebote en bordes
+                if (shape.x - shape.size / 2 < 0 || shape.x + shape.size / 2 > canvas.width) shape.vx *= -1;
+                if (shape.y - shape.size / 2 < 0 || shape.y + shape.size / 2 > canvas.height) shape.vy *= -1;
+            });
+
+            // Detectar colisión con formas
+            shapes.forEach(shape => {
+                const dx = star.x - shape.x;
+                const dy = star.y - shape.y;
+                if (Math.hypot(dx, dy) < star.radius + shape.size / 2) {
+                    if (shape.type === targetShape) {
+                        score += 1;
+                        shapeSpeed = Math.min(shapeSpeed + 0.05, maxShapeSpeed); // Aumentar velocidad
+                        shapeSound.play().catch(e => console.log("Error sonido:", e));
+                        newTargetShape();
+                    }
+                }
+            });
+        }
+
+        // Dibujar juego
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar formas
+            shapes.forEach(shape => {
+                ctx.fillStyle = shape.color;
+                shape.draw(shape.x, shape.y, shape.size);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Dibujar estrella
+            ctx.fillStyle = '#FFD700';
+            const spikes = 5;
+            ctx.beginPath();
+            for (let i = 0; i < spikes * 2; i++) {
+                const radius = i % 2 === 0 ? star.radius : star.radius / 2;
+                const angle = i * Math.PI / spikes - Math.PI / 2;
+                ctx.lineTo(star.x + radius * Math.cos(angle), star.y + radius * Math.sin(angle));
+            }
+            ctx.closePath();
+            ctx.fill();
+            // Ojos
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(star.x - 5, star.y - 5, 3, 0, Math.PI * 2);
+            ctx.arc(star.x + 5, star.y - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(star.x - 5, star.y - 5, 1, 0, Math.PI * 2);
+            ctx.arc(star.x + 5, star.y - 5, 1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dibujar objetivo
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(10, 10, 100, 100);
+            const target = shapeTypes.find(t => t.name === targetShape);
+            ctx.fillStyle = target.color;
+            target.draw(60, 60, 60);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText(targetShape.charAt(0).toUpperCase() + targetShape.slice(1), 10, 130);
+
+            // Dibujar puntaje
+            ctx.fillStyle = '#FFF';
+            ctx.font = '30px Arial';
+            ctx.fillText(`Puntos: ${score}`, 10, canvas.height - 20);
+        }
+
+        // Bucle principal
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>
