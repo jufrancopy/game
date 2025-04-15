@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Juegos HTML5</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .game-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .game-content {
+            padding: 1.5rem;
+        }
+        
+        .game-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .game-description {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 1.5rem;
+        }
+        
+        .play-button {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .play-button:hover {
+            background-color: #c0392b;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            background-color: var(--dark);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Mis Juegos HTML5</h1>
+            <p>Colección de juegos desarrollados con HTML, CSS y JavaScript</p>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="games-grid">
+            <!-- Juego 1: Rally del Chaco -->
+            <div class="game-card">
+                <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Rally del Chaco" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Rally del Chaco</h2>
+                    <div class="game-meta">
+                        <span>Carreras</span>
+                        <span>2D</span>
+                    </div>
+                    <p class="game-description">
+                        Un emocionante juego de rally 2D ambientado en el Chaco paraguayo. 
+                        Esquiva obstáculos, usa turbo y compite contra el reloj en pistas 
+                        llenas de curvas y terrenos difíciles. Demuestra tus habilidades 
+                        de conducción en este desafío lleno de adrenalina.
+                    </p>
+                    <a href="rally_chaco.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
+            
+            <!-- Plantilla para nuevos juegos -->
+            <!--
+            <div class="game-card">
+                <img src="imagen_juego.jpg" alt="Nombre del Juego" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Nombre del Juego</h2>
+                    <div class="game-meta">
+                        <span>Categoría</span>
+                        <span>Tipo</span>
+                    </div>
+                    <p class="game-description">
+                        Descripción breve del juego y sus características principales.
+                    </p>
+                    <a href="enlace_juego.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
+            -->
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Mis Juegos HTML5. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
