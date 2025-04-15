@@ -4,707 +4,1403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portafolio de Formularios Médicos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <title>Rally del Chaco 2D</title>
     <style>
-        :root {
-            --primary-color: #0f6f61;
-            --secondary-color: #f8f9fa;
-            --accent-color: #ff6b6b;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--secondary-color);
-            color: #333;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1a936f 100%);
-            color: white;
-            padding: 4rem 0;
-            margin-bottom: 3rem;
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-formulario {
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            margin-bottom: 25px;
-            height: 100%;
-        }
-
-        .card-formulario:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-img-top {
-            height: 180px;
-            object-fit: contain;
-            padding: 1.5rem;
-            background-color: #f0f8f7;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        .card-title {
-            color: var(--primary-color);
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .card-text {
-            color: #666;
-            margin-bottom: 1.5rem;
-        }
-
-        .badge-categoria {
-            background-color: #e0f2f1;
-            color: var(--primary-color);
-            font-weight: 500;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-
-        .rating-container {
+            margin: 0;
+            padding: 0;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .rating-stars {
-            color: #ffc107;
-            font-size: 1.2rem;
-        }
-
-        .rating-count {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary-custom {
-            background-color: var(--primary-color);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-        }
-
-        .btn-primary-custom:hover {
-            background-color: #0d5c50;
-        }
-
-        .footer {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 2rem 0;
-            margin-top: 3rem;
-        }
-
-        .search-container {
-            max-width: 600px;
-            margin: 0 auto 2rem;
-        }
-
-        .category-filter {
-            margin-bottom: 2rem;
-        }
-
-        .category-btn {
-            margin-right: 8px;
-            margin-bottom: 8px;
-            border-radius: 20px;
-        }
-
-        .active-category {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .floating-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: white;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            transition: all 0.3s;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c1e0f;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
         }
 
-        .floating-btn:hover {
-            transform: scale(1.1);
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
+
+        #gameCanvas {
+            border: 4px solid #8B4513;
+            background-color: #D2B48C;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .mobileControls {
+            display: none;
+        }
+
+        @media (max-width: 800px) {
+            #gameContainer {
+                width: 100%;
+                height: 80vh;
+            }
+
+            #gameCanvas {
+                width: 100%;
+                height: 100%;
+            }
+
+            .mobileControls {
+                display: flex;
+            }
+
+            .controlButton {
+                width: 60px;
+                height: 60px;
+                background-color: rgba(139, 69, 19, 0.7);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                font-size: 24px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 10px;
+            }
+        }
+
+        #stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
             color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #turboMeter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 20px;
+            border: 2px solid white;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #turboBar {
+            height: 100%;
+            width: 0%;
+            background-color: #ff6600;
+            transition: width 0.3s;
+        }
+
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+        }
+
+        #startScreen h1 {
+            font-size: 36px;
+            color: #ff6600;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #startButton {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #startButton:hover {
+            background-color: #ff8533;
         }
     </style>
 </head>
 
 <body>
-    <!-- Hero Section -->
-    <section class="hero-section text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold mb-3">Portafolio de Formularios Médicos</h1>
-            <p class="lead mb-4">Herramientas digitales para la evaluación integral de pacientes</p>
-            <!-- Hero Section 
-            <div class="search-container">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Buscar formularios..." id="searchInput">
-                    <button class="btn btn-light" type="button">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-            -->
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div id="stats">
+            <div>Tiempo: <span id="timeDisplay">0s</span></div>
+            <div>Velocidad: <span id="speedDisplay">0</span> km/h</div>
         </div>
-    </section>
 
-    <!-- Categorías 
-    <div class="container category-filter">
-        <div class="text-center">
-            <button class="btn btn-outline-primary category-btn active-category" data-category="all">Todos</button>
-            <button class="btn btn-outline-primary category-btn" data-category="preconsulta">Pre-Consulta</button>
-            <button class="btn btn-outline-primary category-btn" data-category="evaluacion">Evaluación</button>
-            <button class="btn btn-outline-primary category-btn" data-category="seguimiento">Seguimiento</button>
-            <button class="btn btn-outline-primary category-btn" data-category="especialidad">Especialidad</button>
+        <div id="turboMeter">
+            <div id="turboBar"></div>
         </div>
-    </div>
-    -->
-    <!-- Formularios -->
-    <div class="container">
-        <div class="row" id="formulariosContainer">
-            <!-- Formulario 1: Pre-Consulta Adultos Mayores -->
-            <div class="col-lg-4 col-md-6" data-categories="preconsulta evaluacion">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/437/437581.png" class="card-img-top"
-                        alt="Adulto mayor">
-                    <div class="card-body">
-                        <h5 class="card-title">Pre-Consulta Adultos Mayores</h5>
-                        <p class="card-text">Evaluación integral para pacientes geriátricos que incluye actividades de
-                            la vida diaria, deterioro cognitivo y factores de riesgo. Basado en los parámteros de la
-                            Dirección de Medicina Preventiva del Instituto de Previsión Social - Paraguay</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Geriatría</span>
-                            <span class="badge badge-categoria">Pre-Consulta</span>
-                        </div>
-                        <a href="pre_consulta.html" class="btn btn-primary-custom text-white">Ver
-                            formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-1">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Formulario 2: Evaluación Cardiovascular -->
-            <div class="col-lg-4 col-md-6" data-categories="evaluacion especialidad">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3696/3696554.png" class="card-img-top"
-                        alt="Corazón">
+        <div id="controls" class="mobileControls">
+            <button class="controlButton" id="leftBtn">←</button>
+            <button class="controlButton" id="upBtn">↑</button>
+            <button class="controlButton" id="downBtn">↓</button>
+            <button class="controlButton" id="rightBtn">→</button>
+            <button class="controlButton" id="turboBtn">T</button>
+        </div>
 
-                    <div class="card-body">
-                        <h5 class="card-title">Evaluación Cardiovascular</h5>
-                        <p class="card-text">Formulario completo para evaluación de factores de riesgo cardiovascular
-                            según Life's Essential 8 de la AHA.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Cardiología</span>
-                            <span class="badge badge-categoria">Prevención</span>
-                        </div>
-                        <a href="analisis_riesgo.html" class="btn btn-primary-custom text-white">Ver
-                            formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-2">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Previbus -->
-            <div class="col-lg-4 col-md-6" data-categories="previbus">
-                <div class="card card-formulario card-reporte">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2711/2711586.png" class="card-img-top"
-                        alt="Previbus - Generación de Reportes y Análisis">
-                    <div class="card-body">
-                        <h5 class="card-title">Previbus - Reportes y Análisis Inteligente</h5>
-                        <p class="card-text">Este formulario Previbus permite la recopilación de datos para la
-                            generación de reportes detallados y respaldos estratégicos. Facilita el análisis con
-                            herramientas de Business Intelligence, la creación de informes en formato PDF y la
-                            exportación de datos a Excel, optimizando la toma de decisiones informada.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Reportes Gerenciales</span>
-                            <span class="badge badge-categoria">Análisis de Datos</span>
-                            <span class="badge badge-categoria">Business Intelligence</span>
-                            <span class="badge badge-categoria">Exportación de Datos</span>
-                        </div>
-                        <a href="previbus.html" class="btn btn-primary-custom text-white">Ver Formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-previbus-reportes">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Formulario 3: Seguimiento Diabetes -->
-            <div class="col-lg-4 col-md-6" data-categories="seguimiento especialidad">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3461/3461668.png" class="card-img-top"
-                        alt="Diabetes">
-                    <div class="card-body">
-                        <h5 class="card-title">Pre Consulta basado en </h5>
-                        <p class="card-text">Formulario de Relevamiento de Datos de Datos Generales: signos vitales,
-                            evaluación clínica, estilo de Vida, exámenes, consejería, seguimiento</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Enfemería</span>
-                            <span class="badge badge-categoria">Seguimiento</span>
-                        </div>
-                        <a href="historia_clinica.html" class="btn btn-primary-custom text-white">Ver formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-3">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Formulario 4: Evaluación de Salud Mental -->
-            <div class="col-lg-4 col-md-6" data-categories="evaluacion especialidad">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2942/2942789.png" class="card-img-top"
-                        alt="Salud mental">
-                    <div class="card-body">
-                        <h5 class="card-title">Evaluación de Salud Mental</h5>
-                        <p class="card-text">Cuestionario para detección de depresión, ansiedad y estrés en pacientes
-                            adultos.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Psiquiatría</span>
-                            <span class="badge badge-categoria">Detección</span>
-                        </div>
-                        <a href="evaluacion_salud_mental.html" class="btn btn-primary-custom text-white">Ver
-                            formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-4">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Formulario 5: Pre-Consulta Pediátrica -->
-            <div class="col-lg-4 col-md-6" data-categories="preconsulta especialidad">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3345/3345397.png" class="card-img-top" alt="Niño">
-                    <div class="card-body">
-                        <h5 class="card-title">Pre-Consulta Pediátrica</h5>
-                        <p class="card-text">Formulario para evaluación inicial de pacientes pediátricos, incluyendo
-                            desarrollo y antecedentes.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Pediatría</span>
-                            <span class="badge badge-categoria">Pre-Consulta</span>
-                        </div>
-                        <a href="pre_consulta_pediatrica.html" class="btn btn-primary-custom text-white">Ver
-                            formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-5">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Formulario 6: Seguimiento COVID-19 -->
-            <div class="col-lg-4 col-md-6" data-categories="seguimiento">
-                <div class="card card-formulario">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2785/2785407.png" class="card-img-top"
-                        alt="COVID-19">
-                    <div class="card-body">
-                        <h5 class="card-title">Seguimiento Post-COVID</h5>
-                        <p class="card-text">Evaluación de síntomas persistentes y complicaciones en pacientes
-                            recuperados de COVID-19.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Medicina General</span>
-                            <span class="badge badge-categoria">Seguimiento</span>
-                        </div>
-                        <a href="seguimiento_covid.html" class="btn btn-primary-custom text-white">Ver formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-6">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Categorización Hospitalaria -->
-            <div class="col-lg-4 col-md-6" data-categories="categorizacion">
-                <div class="card card-formulario card-reporte">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2005/2005274.png" class="card-img-top"
-                        alt="Categorización Hospitalaria">
-                    <div class="card-body">
-                        <h5 class="card-title">Categorización de Establecimientos de Salud</h5>
-                        <p class="card-text">Este formulario evalúa las capacidades de su institución de salud según
-                            tres dimensiones clave: Recursos Humanos, Recursos Tecnológicos y Capacidad Resolutiva.
-                            Genera una categorización automática según estándares nacionales y permite exportar reportes
-                            en PDF para documentación oficial.</p>
-                        <div class="mb-3">
-                            <span class="badge badge-categoria">Salud Pública</span>
-                            <span class="badge badge-categoria">Acreditación</span>
-                            <span class="badge badge-categoria">Evaluación Institucional</span>
-                            <span class="badge badge-categoria">Estándares de Calidad</span>
-                        </div>
-                        <a href="categorizacion.html" class="btn btn-primary-custom text-white">Ver
-                            Formulario</a>
-                        <div class="rating-container">
-                            <div class="rating-stars">
-                                <i class="fas fa-star" data-rating="1"></i>
-                                <i class="fas fa-star" data-rating="2"></i>
-                                <i class="fas fa-star" data-rating="3"></i>
-                                <i class="fas fa-star" data-rating="4"></i>
-                                <i class="fas fa-star" data-rating="5"></i>
-                            </div>
-                            <div class="rating-count" id="ratingCount-categorizacion">(0 votos)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+        <div id="startScreen">
+            <h1>RALLY DEL CHACO</h1>
+            <p>Controles: Flechas para mover, Espacio para turbo</p>
+            <p>Esquiva obstáculos, recoge power-ups y llega a la meta</p>
+            <button id="startButton">¡COMENZAR!</button>
         </div>
     </div>
 
-    <!---- Perfil -->
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-10 col-lg-12">
-                <div class="profile-card p-4"
-                    style="background-color: white; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-                    <h2 class="text-center mb-4">Sobre el autor de los Formularios</h2>
-                    <div class="profile-content">
-                        <p>
-                            Soy Julio Franco, licenciado en Filosofía con postgrado en Didáctica
-                            Universitaria.
-                            Profesor Elemental de Música con énfasis en Violoncello. Estoy comprometido con la formación
-                            integral a través del
-                            arte y el pensamiento crítico. Actualmente, desempeño funciones docentes en el Instituto
-                            Superior Nacional de Música,
-                            donde imparto la Cátedra de Historia de la Música Paraguaya, Introducción a la Filosofía y
-                            el curso de Violoncello Introductorio. Además, me desempeño como especialista en
-                            Inteligencia de Datos en la Dirección de Medicina Preventiva del Instituto de Previsión
-                            Social (IPS) , donde lidero investigaciones orientadas a optimizar la atención médica y los
-                            servicios ofrecidos a los asegurados. Utilizo herramientas avanzadas de análisis de datos e
-                            inteligencia de negocios para generar insights estratégicos que impulsen la toma de
-                            decisiones basada en tecnología y evidencia.
-                        </p>
-                        <p>
-                            Como multinstrumentista y fundador de la
-                            <a href="https://ipuparaguay.org" target="_blank"
-                                class="text-decoration-none text-primary fw-bold">Orquesta Filarmónica Ipu Paraguay</a>,
-                            he cultivado una amplia trayectoria en el ámbito musical, actuando también como arreglador,
-                            orquestador y compositor. Entre mis experiencias destacadas
-                            se encuentra la dirección de la orquesta en obras emblemáticas, como la zarzuela paraguaya
-                            <em>María Pacuri</em>,
-                            y la coordinación de proyectos musicales en el Teatro Municipal Ignacio A. Pane. Tuve el
-                            honor de trabajar en los arreglos orquestales del
-                            <a href="https://youtube.com/playlist?list=PLwyUtCKRMxQGeKzDvpB1dGNUgneqX6p_B&si=FX2ZYxR9HoIYb4zJ"
-                                target="_blank" class="text-decoration-none text-primary fw-bold">
-                                Proyecto Beatles Sinfónico en el año 2024, con 13 transcripciones de algunas icónicas
-                                piezas de la Banda de Liverpool.</a>
-                        </p>
-                        <p>
-                            Además de mi pasión por la música, soy apasionado de la investigación en tecnología,
-                            desarrollando competencias en lenguajes de programación
-                            como PHP, Python, C, C#, Java y trabajando en el desarrollo de software en varios proyectos.
-                            Esta combinación de habilidades artísticas y tecnológicas
-                            me permite abordar los desafíos desde una perspectiva multidisciplinaria, promoviendo
-                            siempre la innovación y la excelencia en la formación de mis estudiantes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!---- Agradecimientos -->
-    <div class="container">
-        <div class="mt-5">
-            <h3 class="text-center mb-4">Créditos y Agradecimientos</h3>
-            <div class="row justify-content-center">
-                <!-- Card 1: Gemini -->
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <img src="https://www.gstatic.com/images/branding/product/2x/gemini_48dp.png"
-                                alt="Gemini Logo" class="mb-3" style="width: 60px; height: auto;">
-                            <h5 class="card-title">Gemini</h5>
-                            <p class="card-text small">
-                                Agradecemos a <strong>Gemini</strong>, una inteligencia artificial avanzada de Google,
-                                por su contribución en el desarrollo de los formularios.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: GROK -->
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <!-- URL alternativa para el logo de GROK -->
-                            <img src="https://static.cdnlogo.com/logos/g/45/grok.svg" alt="GROK Logo" class="mb-3"
-                                style="width: 60px; height: auto;">
-                            <h5 class="card-title">GROK</h5>
-                            <p class="card-text small">
-                                Agradecemos a <strong>GROK</strong>, una IA desarrollada por xAI, por su colaboración en
-                                la creación de estas herramientas.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: Qwen -->
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <!-- Logo oficial de Qwen -->
-                            <img src="https://assets.alicdn.com/g/qwenweb/qwen-webui-fe/0.0.65/static/qwen_row_text_icon_light_540.png"
-                                alt="Qwen Logo" class="mb-3" style="width: 60px; height: auto;">
-                            <h5 class="card-title">Qwen</h5>
-                            <p class="card-text small">
-                                Agradecemos a <strong>Qwen</strong>, una IA desarrollada por Alibaba Cloud, por su
-                                valiosa contribución en este proyecto.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer text-center">
-        <div class="container">
-            <h3>Portafolio de Formularios Médicos</h3>
-            <p>Herramientas digitales para mejorar la atención al paciente</p>
-            <div class="mt-3">
-                <a href="https://www.facebook.com/jucfra" class="text-white mx-2"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://x.com/juliofrancobaez" class="text-white mx-2"><i class="fab fa-twitter"></i></a>
-                <a href="www.linkedin.com/in/jufrancopy" class="text-white mx-2"><i class="fab fa-linkedin-in"></i></a>
-                <a href="https://github.com/jufrancopy" class="text-white mx-2"><i class="fab fa-github"></i></a>
-            </div>
-            <p class="mt-3 mb-0">© 2025 Todos los derechos reservados</p>
-        </div>
-    </footer>
-
-    <!-- Botón flotante -->
-    <a href="#" class="floating-btn">
-        <i class="fas fa-plus"></i>
-    </a>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Sistema de votación
-        document.querySelectorAll('.rating-stars i').forEach(star => {
-            star.addEventListener('click', function () {
-                const card = this.closest('.card-formulario');
-                const formId = Array.from(document.querySelectorAll('.card-formulario')).indexOf(card) + 1;
-                const rating = parseInt(this.getAttribute('data-rating'));
+        // Configuración del juego
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const turboBar = document.getElementById('turboBar');
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
 
-                // Guardar la votación (simulación)
-                const ip = 'guest'; // En un entorno real, obtendríamos la IP del usuario
-                const ratings = JSON.parse(localStorage.getItem('formRatings') || {};
-                ratings[formId] = ratings[formId] || {};
+        // Tamaño del mapa (mucho más grande que el canvas)
+        const mapWidth = 3000;
+        const mapHeight = 6000;
 
-                // Verificar si ya votó
-                if (ratings[formId][ip]) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Ya votaste',
-                        text: 'Solo puedes votar una vez por formulario.',
-                        confirmButtonColor: '#0f6f61'
-                    });
-                    return;
+        // Variables del juego
+        let gameRunning = false;
+        let gameTime = 0;
+        let lastTimestamp = 0;
+        let keys = {};
+        let touchControls = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            turbo: false
+        };
+
+        // Carga de recursos
+        const sprites = {};
+        const sounds = {};
+
+        // Jugador (auto)
+        const player = {
+            x: 400,
+            y: 5700,
+            width: 40,
+            height: 60,
+            angle: 0,
+            speed: 0,
+            maxSpeed: 300,
+            acceleration: 200,
+            deceleration: 150,
+            handling: 3.5,
+            turbo: 0,
+            maxTurbo: 100,
+            turboRechargeRate: 5,
+            turboDepletionRate: 25,
+            turboBoost: 1.5,
+            damaged: false,
+            damageTime: 0,
+            sprite: null
+        };
+
+        // Cámara que sigue al jugador
+        const camera = {
+            x: 0,
+            y: 0,
+            width: canvas.width,
+            height: canvas.height
+        };
+
+        // Obstáculos y elementos del mapa
+        const obstacles = [
+            // Árboles
+            { type: 'tree', x: 400, y: 5000, radius: 30 },
+            { type: 'tree', x: 600, y: 4800, radius: 30 },
+            { type: 'tree', x: 300, y: 4600, radius: 30 },
+            { type: 'tree', x: 500, y: 4400, radius: 30 },
+            { type: 'tree', x: 250, y: 4200, radius: 30 },
+            { type: 'tree', x: 650, y: 4000, radius: 30 },
+            { type: 'tree', x: 450, y: 3800, radius: 30 },
+            { type: 'tree', x: 300, y: 3600, radius: 30 },
+
+            // Rocas
+            { type: 'rock', x: 500, y: 5300, radius: 25 },
+            { type: 'rock', x: 300, y: 5100, radius: 25 },
+            { type: 'rock', x: 700, y: 4900, radius: 25 },
+            { type: 'rock', x: 400, y: 4700, radius: 25 },
+            { type: 'rock', x: 600, y: 4500, radius: 25 },
+            { type: 'rock', x: 350, y: 4300, radius: 25 },
+            { type: 'rock', x: 550, y: 4100, radius: 25 },
+            { type: 'rock', x: 250, y: 3900, radius: 25 },
+
+            // Pozos
+            { type: 'hole', x: 450, y: 5200, radius: 20 },
+            { type: 'hole', x: 550, y: 5000, radius: 20 },
+            { type: 'hole', x: 350, y: 4800, radius: 20 },
+            { type: 'hole', x: 650, y: 4600, radius: 20 },
+            { type: 'hole', x: 450, y: 4400, radius: 20 },
+            { type: 'hole', x: 550, y: 4200, radius: 20 },
+            { type: 'hole', x: 350, y: 4000, radius: 20 },
+        ];
+
+        // NPCs (otros coches)
+        const npcs = [
+            { x: 350, y: 5500, width: 40, height: 60, angle: 0, speed: 100, turnDirection: 1, turnTimer: 0 },
+            { x: 600, y: 5200, width: 40, height: 60, angle: 0, speed: 120, turnDirection: -1, turnTimer: 0 },
+            { x: 450, y: 4900, width: 40, height: 60, angle: 0, speed: 130, turnDirection: 1, turnTimer: 0 },
+            { x: 550, y: 4600, width: 40, height: 60, angle: 0, speed: 110, turnDirection: -1, turnTimer: 0 },
+        ];
+
+        // Power-ups
+        const powerUps = [
+            { type: 'turbo', x: 450, y: 5400, radius: 15, active: true },
+            { type: 'turbo', x: 350, y: 5100, radius: 15, active: true },
+            { type: 'turbo', x: 550, y: 4800, radius: 15, active: true },
+            { type: 'turbo', x: 450, y: 4500, radius: 15, active: true },
+            { type: 'turbo', x: 550, y: 4200, radius: 15, active: true },
+            { type: 'turbo', x: 350, y: 3900, radius: 15, active: true },
+        ];
+
+        // Zonas de arena (ralentizan al jugador)
+        const sandZones = [
+            { x: 200, y: 5200, width: 150, height: 200 },
+            { x: 600, y: 4800, width: 150, height: 200 },
+            { x: 300, y: 4400, width: 150, height: 200 },
+            { x: 500, y: 4000, width: 150, height: 200 },
+            { x: 250, y: 3600, width: 150, height: 200 },
+        ];
+
+        // Efectos visuales - partículas
+        const particles = [];
+
+        // Meta
+        const finishLine = {
+            x: 400,
+            y: 1000,
+            width: 300,
+            height: 20
+        };
+
+        // Imágenes para precargar
+        const images = {
+            car: createCarImage(),
+            tree: createTreeImage(),
+            rock: createRockImage(),
+            hole: createHoleImage(),
+            turbo: createTurboImage(),
+            sand: createSandImage()
+        };
+
+        // Crear imagen del auto
+        function createCarImage() {
+            const img = new Image(40, 60);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 40;
+            tmpCanvas.height = 60;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            // Dibujar cuerpo del auto
+            tmpCtx.fillStyle = '#D90000';
+            tmpCtx.fillRect(5, 5, 30, 50);
+
+            // Detalles del auto
+            tmpCtx.fillStyle = '#000000';
+            tmpCtx.fillRect(7, 10, 26, 10); // Parabrisas
+            tmpCtx.fillRect(7, 40, 26, 10); // Parabrisas trasero
+
+            // Ruedas
+            tmpCtx.fillStyle = '#333333';
+            tmpCtx.fillRect(2, 15, 6, 12); // Rueda frontal izq
+            tmpCtx.fillRect(32, 15, 6, 12); // Rueda frontal der
+            tmpCtx.fillRect(2, 35, 6, 12); // Rueda trasera izq
+            tmpCtx.fillRect(32, 35, 6, 12); // Rueda trasera der
+
+            return tmpCanvas;
+        }
+
+        // Crear imagen de árbol
+        function createTreeImage() {
+            const img = new Image(60, 60);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 60;
+            tmpCanvas.height = 60;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            // Tronco
+            tmpCtx.fillStyle = '#8B4513';
+            tmpCtx.fillRect(25, 30, 10, 25);
+
+            // Copa del árbol
+            tmpCtx.fillStyle = '#006400';
+            tmpCtx.beginPath();
+            tmpCtx.arc(30, 25, 20, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            return tmpCanvas;
+        }
+
+        // Crear imagen de roca
+        function createRockImage() {
+            const img = new Image(50, 50);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 50;
+            tmpCanvas.height = 50;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            tmpCtx.fillStyle = '#777777';
+            tmpCtx.beginPath();
+            tmpCtx.arc(25, 25, 20, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            // Detalles de la roca
+            tmpCtx.fillStyle = '#555555';
+            tmpCtx.beginPath();
+            tmpCtx.arc(20, 20, 5, 0, Math.PI * 2);
+            tmpCtx.fill();
+            tmpCtx.beginPath();
+            tmpCtx.arc(30, 30, 7, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            return tmpCanvas;
+        }
+
+        // Crear imagen de pozo
+        function createHoleImage() {
+            const img = new Image(40, 40);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 40;
+            tmpCanvas.height = 40;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            // Círculo exterior (sombra)
+            tmpCtx.fillStyle = '#000000';
+            tmpCtx.beginPath();
+            tmpCtx.arc(20, 20, 20, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            // Círculo interior
+            tmpCtx.fillStyle = '#333333';
+            tmpCtx.beginPath();
+            tmpCtx.arc(20, 20, 15, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            return tmpCanvas;
+        }
+
+        // Crear imagen de turbo power-up
+        function createTurboImage() {
+            const img = new Image(30, 30);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 30;
+            tmpCanvas.height = 30;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            // Fondo azul brillante
+            tmpCtx.fillStyle = '#00AAFF';
+            tmpCtx.beginPath();
+            tmpCtx.arc(15, 15, 15, 0, Math.PI * 2);
+            tmpCtx.fill();
+
+            // Símbolo de rayo
+            tmpCtx.fillStyle = '#FFFF00';
+            tmpCtx.beginPath();
+            tmpCtx.moveTo(15, 5);
+            tmpCtx.lineTo(8, 15);
+            tmpCtx.lineTo(13, 15);
+            tmpCtx.lineTo(7, 25);
+            tmpCtx.lineTo(22, 12);
+            tmpCtx.lineTo(17, 12);
+            tmpCtx.lineTo(23, 5);
+            tmpCtx.closePath();
+            tmpCtx.fill();
+
+            return tmpCanvas;
+        }
+
+        // Crear imagen de zona de arena
+        function createSandImage() {
+            const img = new Image(50, 50);
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 50;
+            tmpCanvas.height = 50;
+            const tmpCtx = tmpCanvas.getContext('2d');
+
+            tmpCtx.fillStyle = '#E6C78F';
+            tmpCtx.fillRect(0, 0, 50, 50);
+
+            // Detalles de arena
+            tmpCtx.fillStyle = '#D6B77F';
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * 50;
+                const y = Math.random() * 50;
+                const size = Math.random() * 5 + 2;
+                tmpCtx.beginPath();
+                tmpCtx.arc(x, y, size, 0, Math.PI * 2);
+                tmpCtx.fill();
+            }
+
+            return tmpCanvas;
+        }
+
+        // Eventos de teclado
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Configuración de controles táctiles
+        const mobileButtons = {
+            leftBtn: document.getElementById('leftBtn'),
+            rightBtn: document.getElementById('rightBtn'),
+            upBtn: document.getElementById('upBtn'),
+            downBtn: document.getElementById('downBtn'),
+            turboBtn: document.getElementById('turboBtn')
+        };
+
+        // Eventos para controles táctiles
+        Object.keys(mobileButtons).forEach(key => {
+            const btn = mobileButtons[key];
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                switch (key) {
+                    case 'leftBtn': touchControls.left = true; break;
+                    case 'rightBtn': touchControls.right = true; break;
+                    case 'upBtn': touchControls.up = true; break;
+                    case 'downBtn': touchControls.down = true; break;
+                    case 'turboBtn': touchControls.turbo = true; break;
                 }
+            });
 
-                // Registrar voto
-                ratings[formId][ip] = rating;
-                localStorage.setItem('formRatings', JSON.stringify(ratings));
-
-                // Actualizar visualización
-                updateRatingDisplay(formId);
-
-                // Mostrar confirmación
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Voto registrado!',
-                    text: `Has calificado este formulario con ${rating} estrellas.`,
-                    confirmButtonColor: '#0f6f61'
-                });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                switch (key) {
+                    case 'leftBtn': touchControls.left = false; break;
+                    case 'rightBtn': touchControls.right = false; break;
+                    case 'upBtn': touchControls.up = false; break;
+                    case 'downBtn': touchControls.down = false; break;
+                    case 'turboBtn': touchControls.turbo = false; break;
+                }
             });
         });
 
-        // Función para actualizar la visualización de votos
-        function updateRatingDisplay(formId) {
-            const ratings = JSON.parse(localStorage.getItem('formRatings')) || {};
-            const formRatings = ratings[formId] || {};
+        // Iniciar juego al hacer clic en el botón de inicio
+        startButton.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            gameRunning = true;
+            lastTimestamp = performance.now();
+            requestAnimationFrame(gameLoop);
+        });
 
-            // Calcular promedio
-            const votes = Object.values(formRatings);
-            const totalVotes = votes.length;
-            const averageRating = totalVotes > 0 ?
-                (votes.reduce((a, b) => a + b, 0) / totalVotes).toFixed(1) : 0;
+        // Actualizar el juego
+        function update(deltaTime) {
+            // Incrementar el tiempo de juego
+            gameTime += deltaTime;
 
-            // Actualizar contador
-            document.getElementById(`ratingCount-${formId}`).textContent =
-                `(${totalVotes} ${totalVotes === 1 ? 'voto' : 'votos'})`;
+            // Actualizar el contador de tiempo
+            timeDisplay.textContent = Math.floor(gameTime) + 's';
 
-            // Actualizar estrellas (solo para visualización)
-            const starsContainer = document.querySelectorAll('.card-formulario')[formId - 1]
-                .querySelector('.rating-stars');
+            // Controles del jugador
+            handlePlayerControls(deltaTime);
 
-            starsContainer.querySelectorAll('i').forEach((star, index) => {
-                if (index < Math.floor(averageRating)) {
-                    star.classList.add('fas');
-                    star.classList.remove('far');
-                } else {
-                    star.classList.add('far');
-                    star.classList.remove('fas');
+            // Actualizar posición del jugador
+            updatePlayerPosition(deltaTime);
+
+            // Comprobar colisiones
+            checkCollisions();
+
+            // Actualizar NPCs
+            updateNPCs(deltaTime);
+
+            // Actualizar partículas
+            updateParticles(deltaTime);
+
+            // Actualizar la cámara para seguir al jugador
+            updateCamera();
+
+            // Comprobar si ha llegado a la meta
+            checkFinishLine();
+        }
+
+        // Manejar los controles del jugador
+        function handlePlayerControls(deltaTime) {
+            // Recuperación de daño
+            if (player.damaged) {
+                player.damageTime -= deltaTime;
+                if (player.damageTime <= 0) {
+                    player.damaged = false;
                 }
-            });
-        }
+            }
 
-        // Inicializar visualización de votos
-        for (let i = 1; i <= 6; i++) {
-            updateRatingDisplay(i);
-        }
+            // Control de aceleración/frenado
+            if ((keys['ArrowUp'] || touchControls.up) && !player.damaged) {
+                player.speed += player.acceleration * deltaTime;
+                // Crear partículas de aceleración si el auto está moviéndose
+                if (player.speed > 50) {
+                    createDustParticle(player.x, player.y, 0.5);
+                }
+            } else if ((keys['ArrowDown'] || touchControls.down) && !player.damaged) {
+                player.speed -= player.deceleration * deltaTime * 1.5;
+                // Crear partículas de frenado si el auto está moviéndose
+                if (player.speed > 50) {
+                    createDustParticle(player.x, player.y, 1);
+                }
+            } else {
+                // Desaceleración natural
+                if (player.speed > 0) {
+                    player.speed -= player.deceleration * deltaTime * 0.5;
+                } else if (player.speed < 0) {
+                    player.speed += player.deceleration * deltaTime * 0.5;
+                }
 
-        // Filtro por categorías
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                // Actualizar botones activos
-                document.querySelectorAll('.category-btn').forEach(b => {
-                    b.classList.remove('active-category');
-                });
-                this.classList.add('active-category');
+                // Evitar velocidades muy pequeñas
+                if (Math.abs(player.speed) < 10) {
+                    player.speed = 0;
+                }
+            }
 
-                const category = this.getAttribute('data-category');
-                const cards = document.querySelectorAll('.col-lg-4.col-md-6');
+            // Limitar velocidad máxima
+            let currentMaxSpeed = player.maxSpeed;
 
-                cards.forEach(card => {
-                    if (category === 'all' || card.getAttribute('data-categories').includes(category)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
+            // Verificar si está en zona de arena
+            for (const zone of sandZones) {
+                if (isInSandZone(player, zone)) {
+                    currentMaxSpeed *= 0.6; // Reducir velocidad en arena
+                    createDustParticle(player.x, player.y, 1.5);
+                    break;
+                }
+            }
+
+            // Aplicar turbo
+            if ((keys[' '] || touchControls.turbo) && player.turbo > 0 && !player.damaged) {
+                currentMaxSpeed *= player.turboBoost;
+                player.turbo -= player.turboDepletionRate * deltaTime;
+
+                // Efectos de turbo (partículas)
+                createTurboParticle(player.x, player.y);
+            } else {
+                // Recargar turbo
+                if (player.turbo < player.maxTurbo) {
+                    player.turbo += player.turboRechargeRate * deltaTime;
+                    if (player.turbo > player.maxTurbo) {
+                        player.turbo = player.maxTurbo;
                     }
+                }
+            }
+
+            // Actualizar barra de turbo
+            turboBar.style.width = (player.turbo / player.maxTurbo * 100) + '%';
+
+            // Limitar velocidad máxima y mínima
+            if (player.speed > currentMaxSpeed) {
+                player.speed = currentMaxSpeed;
+            } else if (player.speed < -currentMaxSpeed / 2) {
+                player.speed = -currentMaxSpeed / 2; // Marcha atrás más lenta
+            }
+
+            // Control de dirección
+            if ((keys['ArrowLeft'] || touchControls.left) && Math.abs(player.speed) > 10) {
+                player.angle -= player.handling * deltaTime * (player.speed / player.maxSpeed);
+                createDustParticle(player.x, player.y, 0.8);
+            }
+            if ((keys['ArrowRight'] || touchControls.right) && Math.abs(player.speed) > 10) {
+                player.angle += player.handling * deltaTime * (player.speed / player.maxSpeed);
+                createDustParticle(player.x, player.y, 0.8);
+            }
+
+            // Mantener el ángulo en el rango [0, 2π)
+            player.angle = player.angle % (Math.PI * 2);
+            if (player.angle < 0) {
+                player.angle += Math.PI * 2;
+            }
+
+            // Actualizar display de velocidad
+            speedDisplay.textContent = Math.abs(Math.floor(player.speed));
+        }
+
+        // Actualizar la posición del jugador
+        function updatePlayerPosition(deltaTime) {
+            // Calcular componentes de velocidad según el ángulo
+            const dx = Math.sin(player.angle) * player.speed * deltaTime;
+            const dy = -Math.cos(player.angle) * player.speed * deltaTime;
+
+            // Actualizar posición
+            player.x += dx;
+            player.y += dy;
+
+            // Limitar al mapa
+            if (player.x < player.width / 2) player.x = player.width / 2;
+            if (player.x > mapWidth - player.width / 2) player.x = mapWidth - player.width / 2;
+            if (player.y < player.height / 2) player.y = player.height / 2;
+            if (player.y > mapHeight - player.height / 2) player.y = mapHeight - player.height / 2;
+        }
+
+        // Comprobar colisiones
+        function checkCollisions() {
+            // Colisiones con obstáculos
+            for (const obstacle of obstacles) {
+                if (distance(player.x, player.y, obstacle.x, obstacle.y) < player.width / 2 + obstacle.radius) {
+                    // Colisión detectada
+                    handleCollision(obstacle);
+                    break;
+                }
+            }
+
+            // Colisiones con NPCs
+            for (const npc of npcs) {
+                if (rectCollision(player, npc)) {
+                    // Colisión con otro auto
+                    handleCollision({ type: 'npc' });
+                    break;
+                }
+            }
+
+            // Colisiones con power-ups
+            for (const powerUp of powerUps) {
+                if (powerUp.active && distance(player.x, player.y, powerUp.x, powerUp.y) < player.width / 2 + powerUp.radius) {
+                    // Recoger power-up
+                    collectPowerUp(powerUp);
+                }
+            }
+        }
+
+        // Manejar colisión
+        function handleCollision(obstacle) {
+            if (!player.damaged) {
+                // Reducir velocidad
+                player.speed *= 0.5;
+                if (player.speed < 0) {
+                    player.speed *= -0.5; // Rebote
+                }
+
+                // Marcar como dañado temporalmente
+                player.damaged = true;
+                player.damageTime = 1; // 1 segundo
+
+                // Crear partículas de colisión
+                for (let i = 0; i < 10; i++) {
+                    createCollisionParticle(player.x, player.y);
+                }
+            }
+        }
+
+        // Recoger power-up
+        function collectPowerUp(powerUp) {
+            if (powerUp.type === 'turbo') {
+                // Incrementar turbo
+                player.turbo = player.maxTurbo;
+
+                // Crear efecto visual
+                for (let i = 0; i < 15; i++) {
+                    createTurboParticle(powerUp.x, powerUp.y);
+                }
+            }
+
+            // Desactivar power-up
+            powerUp.active = false;
+        }
+
+        // Actualizar NPCs
+        function updateNPCs(deltaTime) {
+            for (const npc of npcs) {
+                // Actualizar temporizador de giro
+                npc.turnTimer -= deltaTime;
+                if (npc.turnTimer <= 0) {
+                    // Cambiar dirección aleatoriamente
+                    npc.turnDirection = Math.random() > 0.5 ? 1 : -1;
+                    npc.turnTimer = Math.random() * 2 + 1; // Entre 1 y 3 segundos
+                }
+
+                // Girar según la dirección
+                npc.angle += npc.turnDirection * 1.5 * deltaTime;
+
+                // Mantener el ángulo en el rango [0, 2π)
+                npc.angle = npc.angle % (Math.PI * 2);
+                if (npc.angle < 0) {
+                    npc.angle += Math.PI * 2;
+                }
+
+                // Mover NPC
+                const dx = Math.sin(npc.angle) * npc.speed * deltaTime;
+                const dy = -Math.cos(npc.angle) * npc.speed * deltaTime;
+
+                npc.x += dx;
+                npc.y += dy;
+
+                // Limitar al mapa y cambiar dirección si llega al borde
+                if (npc.x < npc.width / 2 || npc.x > mapWidth - npc.width / 2 ||
+                    npc.y < npc.height / 2 || npc.y > mapHeight - npc.height / 2) {
+                    npc.angle += Math.PI; // Girar 180 grados
+                    npc.x = Math.max(npc.width / 2, Math.min(npc.x, mapWidth - npc.width / 2));
+                    npc.y = Math.max(npc.height / 2, Math.min(npc.y, mapHeight - npc.height / 2));
+                }
+            }
+        }
+        // Actualizar partículas
+        function updateParticles(deltaTime) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+
+                // Actualizar posición
+                p.x += p.vx * deltaTime;
+                p.y += p.vy * deltaTime;
+
+                // Actualizar vida
+                p.life -= deltaTime;
+
+                // Eliminar si la vida se agota
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Actualizar la cámara para seguir al jugador
+        function updateCamera() {
+            // Centrar la cámara en el jugador, pero sin salir de los límites del mapa
+            camera.x = Math.max(0, Math.min(player.x - camera.width / 2, mapWidth - camera.width));
+            camera.y = Math.max(0, Math.min(player.y - camera.height / 2, mapHeight - camera.height));
+        }
+
+        // Comprobar si el jugador ha cruzado la meta
+        function checkFinishLine() {
+            if (player.y <= finishLine.y + finishLine.height &&
+                player.y >= finishLine.y - finishLine.height &&
+                player.x >= finishLine.x - finishLine.width / 2 &&
+                player.x <= finishLine.x + finishLine.width / 2) {
+
+                // Mostrar mensaje de victoria
+                showFinishScreen(true);
+            }
+        }
+
+        // Mostrar pantalla de finalización
+        function showFinishScreen(success) {
+            gameRunning = false;
+
+            const finishScreen = document.createElement('div');
+            finishScreen.id = 'finishScreen';
+            finishScreen.style.position = 'absolute';
+            finishScreen.style.top = '0';
+            finishScreen.style.left = '0';
+            finishScreen.style.width = '100%';
+            finishScreen.style.height = '100%';
+            finishScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            finishScreen.style.display = 'flex';
+            finishScreen.style.flexDirection = 'column';
+            finishScreen.style.justifyContent = 'center';
+            finishScreen.style.alignItems = 'center';
+            finishScreen.style.color = 'white';
+            finishScreen.style.zIndex = '20';
+
+            const message = document.createElement('h1');
+            message.style.fontSize = '36px';
+            message.style.color = success ? '#4CAF50' : '#F44336';
+            message.style.marginBottom = '20px';
+            message.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)';
+            message.textContent = success ? '¡VICTORIA!' : '¡HAS PERDIDO!';
+
+            const timeText = document.createElement('p');
+            timeText.style.fontSize = '24px';
+            timeText.style.marginBottom = '30px';
+            timeText.textContent = `Tiempo: ${Math.floor(gameTime)} segundos`;
+
+            const restartButton = document.createElement('button');
+            restartButton.textContent = 'JUGAR DE NUEVO';
+            restartButton.style.padding = '15px 30px';
+            restartButton.style.fontSize = '20px';
+            restartButton.style.backgroundColor = '#FF6600';
+            restartButton.style.color = 'white';
+            restartButton.style.border = 'none';
+            restartButton.style.borderRadius = '5px';
+            restartButton.style.cursor = 'pointer';
+            restartButton.style.transition = 'background-color 0.3s';
+
+            restartButton.addEventListener('mouseenter', () => {
+                restartButton.style.backgroundColor = '#FF8533';
+            });
+
+            restartButton.addEventListener('mouseleave', () => {
+                restartButton.style.backgroundColor = '#FF6600';
+            });
+
+            restartButton.addEventListener('click', () => {
+                location.reload();
+            });
+
+            finishScreen.appendChild(message);
+            finishScreen.appendChild(timeText);
+            finishScreen.appendChild(restartButton);
+
+            gameContainer.appendChild(finishScreen);
+        }
+
+        // Crear partícula de polvo
+        function createDustParticle(x, y, intensity) {
+            for (let i = 0; i < intensity * 2; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 30 + 10;
+
+                particles.push({
+                    x: x + (Math.random() * 20 - 10),
+                    y: y + (Math.random() * 20 - 10),
+                    vx: Math.sin(angle) * speed,
+                    vy: Math.cos(angle) * speed,
+                    radius: Math.random() * 3 + 1,
+                    color: '#E6C78F',
+                    life: Math.random() * 0.5 + 0.3
                 });
+            }
+        }
+
+        // Crear partícula de turbo
+        function createTurboParticle(x, y) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 50 + 50;
+
+            particles.push({
+                x: x + (Math.random() * 10 - 5),
+                y: y + (Math.random() * 10 - 5),
+                vx: Math.sin(angle) * speed,
+                vy: Math.cos(angle) * speed,
+                radius: Math.random() * 2 + 1,
+                color: '#00AAFF',
+                life: Math.random() * 0.3 + 0.2
             });
-        });
+        }
 
-        // Búsqueda
-        document.getElementById('searchInput').addEventListener('input', function () {
-            const searchTerm = this.value.toLowerCase();
-            const cards = document.querySelectorAll('.card-formulario');
+        // Crear partícula de colisión
+        function createCollisionParticle(x, y) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 100 + 50;
 
-            cards.forEach(card => {
-                const title = card.querySelector('.card-title').textContent.toLowerCase();
-                const text = card.querySelector('.card-text').textContent.toLowerCase();
-
-                if (title.includes(searchTerm) || text.includes(searchTerm)) {
-                    card.closest('.col-lg-4.col-md-6').style.display = 'block';
-                } else {
-                    card.closest('.col-lg-4.col-md-6').style.display = 'none';
-                }
+            particles.push({
+                x: x + (Math.random() * 15 - 7.5),
+                y: y + (Math.random() * 15 - 7.5),
+                vx: Math.sin(angle) * speed,
+                vy: Math.cos(angle) * speed,
+                radius: Math.random() * 4 + 2,
+                color: '#FF6600',
+                life: Math.random() * 0.5 + 0.3
             });
-        });
+        }
 
-        // Botón flotante (simulación)
-        document.querySelector('.floating-btn').addEventListener('click', function (e) {
-            e.preventDefault();
-            Swal.fire({
-                title: '¿Qué deseas hacer?',
-                showDenyButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'Nuevo formulario',
-                denyButtonText: 'Ver estadísticas',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#0f6f61',
-                denyButtonColor: '#3085d6',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Nuevo formulario',
-                        text: 'Esta funcionalidad está en desarrollo.',
-                        confirmButtonColor: '#0f6f61'
+        // Comprobar colisión entre rectángulos
+        function rectCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y;
+        }
+
+        // Calcular distancia entre dos puntos
+        function distance(x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Dibujar el juego
+        function render() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar fondo (pista)
+            drawTrack();
+
+            // Dibujar zonas de arena
+            drawSandZones();
+
+            // Dibujar obstáculos
+            drawObstacles();
+
+            // Dibujar power-ups
+            drawPowerUps();
+
+            // Dibujar meta
+            drawFinishLine();
+
+            // Dibujar NPCs
+            drawNPCs();
+
+            // Dibujar partículas
+            drawParticles();
+
+            // Dibujar jugador
+            drawPlayer();
+
+            // Dibujar efectos de daño si es necesario
+            if (player.damaged) {
+                drawDamageEffect();
+            }
+        }
+
+        // Configuración de la pista
+        const track = {
+            width: 400,  // Ancho de la pista principal
+            segments: [], // Segmentos de la pista
+            outerGrassWidth: 150, // Ancho del área de hierba/arena exterior
+            innerGrassWidth: 100  // Ancho del área de hierba/arena interior
+        };
+
+        // Generar la pista sinuosa
+        function generateTrack() {
+            // Puntos de control para la pista (puedes ajustar estos puntos)
+            const controlPoints = [
+                { x: 400, y: 6000 },  // Inicio (abajo)
+                { x: 400, y: 5500 },
+                { x: 300, y: 5000 },
+                { x: 500, y: 4500 },
+                { x: 350, y: 4000 },
+                { x: 450, y: 3500 },
+                { x: 300, y: 3000 },
+                { x: 500, y: 2500 },
+                { x: 400, y: 2000 },
+                { x: 400, y: 1500 },
+                { x: 400, y: 1000 }   // Meta (arriba)
+            ];
+
+            // Crear curva suave a través de los puntos de control
+            for (let i = 0; i < controlPoints.length - 1; i++) {
+                const p1 = controlPoints[Math.max(0, i - 1)];
+                const p2 = controlPoints[i];
+                const p3 = controlPoints[i + 1];
+                const p4 = controlPoints[Math.min(controlPoints.length - 1, i + 2)];
+
+                // Añadir segmentos de la pista
+                for (let t = 0; t < 1; t += 0.05) {
+                    const point = catmullRom(p1, p2, p3, p4, t);
+                    const tangent = catmullRomTangent(p1, p2, p3, p4, t);
+
+                    // Calcular puntos izquierdo y derecho de la pista
+                    const normal = { x: -tangent.y, y: tangent.x };
+                    normalizeVector(normal);
+
+                    const left = {
+                        x: point.x - normal.x * track.width / 2,
+                        y: point.y - normal.y * track.width / 2
+                    };
+
+                    const right = {
+                        x: point.x + normal.x * track.width / 2,
+                        y: point.y + normal.y * track.width / 2
+                    };
+
+                    track.segments.push({
+                        center: point,
+                        left: left,
+                        right: right,
+                        tangent: tangent
                     });
-                } else if (result.isDenied) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Estadísticas',
-                        text: 'Esta funcionalidad está en desarrollo.',
-                        confirmButtonColor: '#0f6f61'
-                    });
                 }
-            });
-        });
+            }
+        }
+
+        // Función de interpolación Catmull-Rom para curvas suaves
+        function catmullRom(p0, p1, p2, p3, t) {
+            const t2 = t * t;
+            const t3 = t2 * t;
+
+            return {
+                x: 0.5 * ((2 * p1.x) +
+                    (-p0.x + p2.x) * t +
+                    (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+                    (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+                y: 0.5 * ((2 * p1.y) +
+                    (-p0.y + p2.y) * t +
+                    (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+                    (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
+            };
+        }
+
+        // Calcular tangente para la curva Catmull-Rom
+        function catmullRomTangent(p0, p1, p2, p3, t) {
+            const t2 = t * t;
+
+            return {
+                x: 0.5 * ((-p0.x + p2.x) +
+                    2 * (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t +
+                    3 * (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t2),
+                y: 0.5 * ((-p0.y + p2.y) +
+                    2 * (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t +
+                    3 * (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t2)
+            };
+        }
+
+        // Normalizar vector
+        function normalizeVector(v) {
+            const length = Math.sqrt(v.x * v.x + v.y * v.y);
+            if (length > 0) {
+                v.x /= length;
+                v.y /= length;
+            }
+        }
+
+        // Comprobar si un punto está dentro de los límites de la pista
+        function isOnTrack(x, y) {
+            // Encontrar el segmento más cercano
+            let closestSegment = null;
+            let minDist = Infinity;
+
+            for (const segment of track.segments) {
+                const dist = distance(x, y, segment.center.x, segment.center.y);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestSegment = segment;
+                }
+            }
+
+            if (!closestSegment) return false;
+
+            // Calcular distancia al centro de la pista
+            const distToCenter = distance(x, y, closestSegment.center.x, closestSegment.center.y);
+            return distToCenter <= track.width / 2;
+        }
+
+        // Dibujar la pista (reemplaza la función anterior)
+        function drawTrack() {
+            // Dibujar fondo de hierba/arena exterior
+            ctx.fillStyle = '#5a8f3d';  // Verde hierba
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar la pista principal
+            if (track.segments.length > 1) {
+                ctx.fillStyle = '#8B4513';  // Color tierra/marron
+                ctx.beginPath();
+
+                // Dibujar lado izquierdo
+                for (let i = 0; i < track.segments.length; i++) {
+                    const segment = track.segments[i];
+                    const x = segment.left.x - camera.x;
+                    const y = segment.left.y - camera.y;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                // Dibujar lado derecho (en orden inverso)
+                for (let i = track.segments.length - 1; i >= 0; i--) {
+                    const segment = track.segments[i];
+                    const x = segment.right.x - camera.x;
+                    const y = segment.right.y - camera.y;
+                    ctx.lineTo(x, y);
+                }
+
+                ctx.closePath();
+                ctx.fill();
+
+                // Dibujar bordes de la pista
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Dibujar líneas centrales
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([30, 30]);
+                ctx.beginPath();
+
+                for (const segment of track.segments) {
+                    const x = segment.center.x - camera.x;
+                    const y = segment.center.y - camera.y;
+
+                    if (segment === track.segments[0]) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // Modificar la función isInSandZone para usar la pista
+        function isInSandZone(player, zone) {
+            // Verificar si está fuera de la pista
+            if (!isOnTrack(player.x, player.y)) {
+                return true;
+            }
+
+            // Verificar zonas de arena específicas (opcional)
+            for (const zone of sandZones) {
+                if (distance(player.x, player.y, zone.x, zone.y) < zone.radius) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Generar la pista al iniciar
+        generateTrack();
+
+        // Dibujar zonas de arena
+        function drawSandZones() {
+            for (const zone of sandZones) {
+                // Solo dibujar si está visible en la cámara
+                if (zone.x + zone.width / 2 > camera.x &&
+                    zone.x - zone.width / 2 < camera.x + camera.width &&
+                    zone.y + zone.height / 2 > camera.y &&
+                    zone.y - zone.height / 2 < camera.y + camera.height) {
+
+                    const x = zone.x - camera.x - zone.width / 2;
+                    const y = zone.y - camera.y - zone.height / 2;
+
+                    // Patrón de arena
+                    ctx.save();
+                    ctx.translate(x, y);
+
+                    // Crear patrón con la imagen de arena
+                    const pattern = ctx.createPattern(images.sand, 'repeat');
+                    ctx.fillStyle = pattern;
+                    ctx.fillRect(0, 0, zone.width, zone.height);
+
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Dibujar obstáculos
+        function drawObstacles() {
+            for (const obstacle of obstacles) {
+                // Solo dibujar si está visible en la cámara
+                if (obstacle.x + obstacle.radius > camera.x &&
+                    obstacle.x - obstacle.radius < camera.x + camera.width &&
+                    obstacle.y + obstacle.radius > camera.y &&
+                    obstacle.y - obstacle.radius < camera.y + camera.height) {
+
+                    const x = obstacle.x - camera.x;
+                    const y = obstacle.y - camera.y;
+
+                    // Dibujar según el tipo de obstáculo
+                    switch (obstacle.type) {
+                        case 'tree':
+                            ctx.drawImage(images.tree, x - 30, y - 30, 60, 60);
+                            break;
+                        case 'rock':
+                            ctx.drawImage(images.rock, x - 25, y - 25, 50, 50);
+                            break;
+                        case 'hole':
+                            ctx.drawImage(images.hole, x - 20, y - 20, 40, 40);
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Dibujar power-ups
+        function drawPowerUps() {
+            for (const powerUp of powerUps) {
+                if (powerUp.active) {
+                    // Solo dibujar si está visible en la cámara
+                    if (powerUp.x + powerUp.radius > camera.x &&
+                        powerUp.x - powerUp.radius < camera.x + camera.width &&
+                        powerUp.y + powerUp.radius > camera.y &&
+                        powerUp.y - powerUp.radius < camera.y + camera.height) {
+
+                        const x = powerUp.x - camera.x;
+                        const y = powerUp.y - camera.y;
+
+                        // Dibujar según el tipo de power-up
+                        if (powerUp.type === 'turbo') {
+                            ctx.drawImage(images.turbo, x - 15, y - 15, 30, 30);
+
+                            // Efecto de brillo intermitente
+                            if (Math.sin(gameTime * 5) > 0.5) {
+                                ctx.beginPath();
+                                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                                ctx.fillStyle = 'rgba(0, 170, 255, 0.3)';
+                                ctx.fill();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Dibujar meta
+        function drawFinishLine() {
+            // Solo dibujar si está visible en la cámara
+            if (finishLine.x + finishLine.width / 2 > camera.x &&
+                finishLine.x - finishLine.width / 2 < camera.x + camera.width &&
+                finishLine.y + finishLine.height > camera.y &&
+                finishLine.y - finishLine.height < camera.y + camera.height) {
+
+                const x = finishLine.x - camera.x - finishLine.width / 2;
+                const y = finishLine.y - camera.y - finishLine.height / 2;
+
+                // Dibujar línea de meta (bandera a cuadros)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(x, y, finishLine.width, finishLine.height);
+
+                // Patrón de cuadros
+                const squareSize = 15;
+                ctx.fillStyle = '#FF0000';
+                for (let i = 0; i < finishLine.width / squareSize; i++) {
+                    for (let j = 0; j < finishLine.height / squareSize; j++) {
+                        if ((i + j) % 2 === 0) {
+                            ctx.fillRect(
+                                x + i * squareSize,
+                                y + j * squareSize,
+                                squareSize,
+                                squareSize
+                            );
+                        }
+                    }
+                }
+
+                // Texto "META"
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    'META',
+                    finishLine.x - camera.x,
+                    finishLine.y - camera.y + 7
+                );
+            }
+        }
+
+        // Dibujar NPCs
+        function drawNPCs() {
+            for (const npc of npcs) {
+                // Solo dibujar si está visible en la cámara
+                if (npc.x + npc.width / 2 > camera.x &&
+                    npc.x - npc.width / 2 < camera.x + camera.width &&
+                    npc.y + npc.height / 2 > camera.y &&
+                    npc.y - npc.height / 2 < camera.y + camera.height) {
+
+                    const x = npc.x - camera.x;
+                    const y = npc.y - camera.y;
+
+                    // Guardar el estado del contexto
+                    ctx.save();
+
+                    // Mover el origen al centro del NPC y rotar
+                    ctx.translate(x, y);
+                    ctx.rotate(npc.angle);
+
+                    // Dibujar NPC (similar al auto del jugador pero en azul)
+                    ctx.fillStyle = '#0000AA';
+                    ctx.fillRect(-npc.width / 2, -npc.height / 2, npc.width, npc.height);
+
+                    // Detalles del auto
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(-npc.width / 2 + 2, -npc.height / 2 + 5, npc.width - 4, 10); // Parabrisas
+                    ctx.fillRect(-npc.width / 2 + 2, npc.height / 2 - 15, npc.width - 4, 10); // Parabrisas trasero
+
+                    // Ruedas
+                    ctx.fillStyle = '#333333';
+                    ctx.fillRect(-npc.width / 2 - 3, -npc.height / 2 + 10, 6, 12); // Rueda frontal izq
+                    ctx.fillRect(npc.width / 2 - 3, -npc.height / 2 + 10, 6, 12); // Rueda frontal der
+                    ctx.fillRect(-npc.width / 2 - 3, npc.height / 2 - 22, 6, 12); // Rueda trasera izq
+                    ctx.fillRect(npc.width / 2 - 3, npc.height / 2 - 22, 6, 12); // Rueda trasera der
+
+                    // Restaurar el estado del contexto
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Dibujar partículas
+        function drawParticles() {
+            for (const p of particles) {
+                // Solo dibujar si está visible en la cámara
+                if (p.x + p.radius > camera.x &&
+                    p.x - p.radius < camera.x + camera.width &&
+                    p.y + p.radius > camera.y &&
+                    p.y - p.radius < camera.y + camera.height) {
+
+                    const x = p.x - camera.x;
+                    const y = p.y - camera.y;
+
+                    ctx.globalAlpha = p.life; // Efecto de desvanecimiento
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+
+        // Dibujar jugador
+        function drawPlayer() {
+            // Guardar el estado del contexto
+            ctx.save();
+
+            // Mover el origen al centro del jugador y rotar
+            ctx.translate(player.x - camera.x, player.y - camera.y);
+            ctx.rotate(player.angle);
+
+            // Dibujar auto del jugador
+            ctx.drawImage(images.car, -player.width / 2, -player.height / 2, player.width, player.height);
+
+            // Restaurar el estado del contexto
+            ctx.restore();
+        }
+
+        // Dibujar efecto de daño
+        function drawDamageEffect() {
+            // Efecto de parpadeo rojo
+            if (Math.floor(player.damageTime * 10) % 2 === 0) {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // Bucle principal del juego
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+
+            // Calcular deltaTime (tiempo entre frames en segundos)
+            const deltaTime = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            // Actualizar y renderizar
+            update(deltaTime);
+            render();
+
+            // Solicitar siguiente frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Iniciar precarga de recursos
+        function preloadResources() {
+            // Aquí iría la precarga de imágenes y sonidos reales si los hubiera
+            // Por ahora solo tenemos las imágenes generadas dinámicamente
+            startButton.disabled = false;
+        }
+
+        // Iniciar precarga cuando la página se carga
+        window.addEventListener('load', preloadResources);
     </script>
 </body>
 
