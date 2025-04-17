@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Driver FRVR Race for Kids</title>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(#87CEEB, #E0FFFF);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        #game-container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: auto;
+            border: 5px solid #FFD700;
+            background-color: #228B22;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            display: block;
+            margin: 0 auto;
+            max-height: 80vh;
+        }
+
+        #score {
+            font-size: 24px;
+            color: #FF4500;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #progress-container {
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        #progressBar {
+            width: 100%;
+            height: 20px;
+            border-radius: 10px;
+            background-color: #D3D3D3;
+            border: 3px solid #FF69B4;
+            box-shadow: 0 0 10px #FF69B4;
+        }
+
+        #progressBar::-webkit-progress-value {
+            background-color: #32CD32;
+            border-radius: 10px;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .control-btn {
+            flex: 1;
+            margin: 0 5px;
+            padding: 15px 0;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            background-color: rgba(255, 105, 180, 0.7);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+            backdrop-filter: blur(3px);
+        }
+
+        .control-btn:active {
+            transform: scale(0.9);
+        }
+
+        #jumpBtn {
+            background-color: rgba(50, 205, 50, 0.7);
+        }
+
+        .swal2-popup,
+        .swal2-toast {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #FFFFE0;
+            border: 3px solid #FFD700;
+        }
+
+        .swal2-title {
+            color: #FF4500;
+        }
+
+        .swal2-content,
+        .swal2-html-container {
+            color: #1E90FF;
+        }
+
+        #tutorial-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #tutorial-overlay h2 {
+            color: #FFD700;
+        }
+
+        #tutorial-overlay p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        #tutorial-overlay button {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        #powerup-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #FF4500;
+            display: none;
+        }
+
+        .combo-counter {
+            position: absolute;
+            font-size: 18px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-weight: bold;
+            top: 10px;
+            left: 10px;
+        }
+
+        @keyframes moveClouds {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 400px 0;
+            }
+        }
+
+        #game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/clouds.png');
+            opacity: 0.2;
+            animation: moveClouds 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @media (max-height: 600px) {
+            #gameCanvas {
+                max-height: 60vh;
+            }
+
+            .control-btn {
+                padding: 10px 0;
+                font-size: 20px;
+            }
+
+            #score {
+                font-size: 18px;
+                margin: 5px 0;
+            }
+
+            #progress-container {
+                margin: 5px 0;
+            }
+        }
+
+        .health-container {
+            display: flex;
+            justify-content: center;
+            margin: 5px 0;
+        }
+
+        .health-heart {
+            color: red;
+            font-size: 24px;
+            margin: 0 3px;
+        }
+
+        .jump-cooldown {
+            height: 5px;
+            background-color: #32CD32;
+            width: 100%;
+            border-radius: 2px;
+            margin-top: 2px;
+            transition: width 0.5s;
+        }
+
+        .flash {
+            animation: flash 0.3s;
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .floating-score {
+            position: absolute;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="powerup-indicator">🚀 TURBO</div>
+        <div class="combo-counter">Combo: <span id="comboValue">0</span>x</div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="health-container" id="healthDisplay"></div>
+        <div id="score">Score: <span id="scoreValue">0</span></div>
+        <div id="progress-container">
+            <progress id="progressBar" value="0" max="100"></progress>
+        </div>
+        <div class="game-controls">
+            <button id="leftBtn" class="control-btn">←</button>
+            <button id="jumpBtn" class="control-btn">JUMP</button>
+            <button id="rightBtn" class="control-btn">→</button>
+        </div>
+        <div id="tutorial-overlay">
+            <h2>¡Bienvenido a Driver FRVR!</h2>
+            <p>Desliza hacia los lados para moverte</p>
+            <p>Toca "JUMP" para saltar sobre obstáculos</p>
+            <p>Recoge pasajeros y monedas para ganar puntos</p>
+            <p>¡Evita chocar con otros coches y obstáculos!</p>
+            <button id="startGameBtn">¡JUGAR AHORA!</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('scoreValue');
+        const comboElement = document.getElementById('comboValue');
+        const progressBar = document.getElementById('progressBar');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const jumpBtn = document.getElementById('jumpBtn');
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const powerupIndicator = document.getElementById('powerup-indicator');
+        const healthDisplay = document.getElementById('healthDisplay');
+
+        // Set canvas size based on device
+        const setCanvasSize = () => {
+            const containerWidth = canvas.parentElement.clientWidth - 20;
+            const aspectRatio = 2 / 3; // height = 1.5 * width
+            canvas.width = Math.min(containerWidth, 400);
+            canvas.height = canvas.width / aspectRatio;
+        };
+
+        // Initialize canvas size
+        setCanvasSize();
+        window.addEventListener('resize', setCanvasSize);
+
+        // Audio elements setup
+        const createAudio = (src) => {
+            const audio = new Audio();
+            audio.src = src;
+            audio.preload = 'auto';
+            return audio;
+        };
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch (type) {
+                case 'crash':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(110, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'coin':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1760, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'turbo':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'jump':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(330, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'passenger':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.1);
+                    oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        // Toast setup for notifications
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+
+        // Game state
+        let playerName = '';
+        let score = 0;
+        let hearts = 3;
+        let gameRunning = false;
+        let distance = 0;
+        let speedLevel = 1;
+        let combo = 0;
+        let comboMultiplier = 1;
+        let comboTimer = 0;
+        let maxCombo = 0;
+        let jumpCooldown = 0;
+        let canJump = true;
+        let isJumping = false;
+        let jumpHeight = 0;
+        let jumpVelocity = 0;
+        let gracePeriod = 3000;
+        let startTime = 0;
+        let turboActive = false;
+        let turboEndTime = 0;
+        let slowActive = false;
+        let slowEndTime = 0;
+        let slowFactor = 1;
+        let invincible = false;
+        let invincibleEndTime = 0;
+
+        // Landscape elements
+        const roadWidth = canvas.width * 0.8;
+        const roadX = (canvas.width - roadWidth) / 2;
+
+        // Colors for game elements
+        const carColors = ['#FF0000', '#00B7EB', '#FFD700', '#32CD32', '#9932CC']; // Red, Blue, Yellow, Green, Purple
+
+        // Game objects
+        const cars = [];
+        const oncomingCars = [];
+        const passengers = [];
+        const coins = [];
+        const turbos = [];
+        const oils = [];
+        const waters = [];
+        const motorbikes = [];
+        const bicycles = [];
+        const rocks = [];
+        const barriers = [];
+        const jumpBoosts = [];
+        const shields = [];
+        const floatingScores = [];
+
+        // Touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchMoveDistance = 0;
+        let keys = {};
+        let laneOffset = 0;
+
+        // Car class
+        class Car {
+            constructor(x, y, color, isPlayer = false) {
+                this.x = x;
+                this.y = y;
+                this.width = canvas.width * 0.06;
+                this.height = this.width * 1.4;
+                this.color = color;
+                this.isPlayer = isPlayer;
+                this.dx = 0;
+                this.dy = isPlayer ? 0 : canvas.height * 0.0025 * speedLevel;
+                this.isJumping = false;
+                this.jumpHeight = 0;
+                this.originalY = y;
+                this.shadowY = y + this.height;
+            }
+
+            draw() {
+                // Shadow under car
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.shadowY + 2, this.width / 2, this.height / 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Car body
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // Car roof
+                ctx.fillStyle = this.isPlayer ? '#333333' : this.color;
+                ctx.fillRect(this.x + this.width * 0.1, this.y + this.height * 0.2, this.width * 0.8, this.height * 0.3);
+
+                // Windshield
+                ctx.fillStyle = '#87CEFA';
+                ctx.fillRect(this.x + this.width * 0.15, this.y + this.height * 0.1, this.width * 0.7, this.height * 0.15);
+
+                // Wheels
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(this.x - this.width * 0.1, this.y + this.height * 0.2, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x - this.width * 0.1, this.y + this.height * 0.6, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x + this.width * 0.9, this.y + this.height * 0.2, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x + this.width * 0.9, this.y + this.height * 0.6, this.width * 0.2, this.height * 0.2);
+
+                // Headlights
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(this.x + this.width * 0.1, this.y, this.width * 0.2, this.height * 0.05);
+                ctx.fillRect(this.x + this.width * 0.7, this.y, this.width * 0.2, this.height * 0.05);
+
+                // Glow effect for player's car when invincible
+                if (this.isPlayer && invincible) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.5 + 0.3 * Math.sin(Date.now() / -90);
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#00FFFF';
+                    ctx.strokeStyle = '#00FFFF';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x - 5, this.y - 5, this.width + 10, this.height + 10);
+                    ctx.restore();
+                }
+            }
+
+            update() {
+                if (this.isPlayer) {
+                    const baseSpeed = canvas.width * 0.01 * (turboActive ? 2 : 1) * slowFactor;
+                    this.dx = (keys['ArrowLeft'] || keys['a'] || leftBtn.pressed ? -baseSpeed : keys['ArrowRight'] || keys['d'] || rightBtn.pressed ? baseSpeed : 0);
+
+                    // Jump logic
+                    if (isJumping) {
+                        this.jumpHeight = jumpHeight;
+                        this.y = this.originalY - this.jumpHeight;
+                    } else {
+                        this.jumpHeight = 0;
+                        this.y = this.originalY;
+                    }
+
+                    // Speed boost when jumping with turbo
+                    const turboBoost = (isJumping && turboActive) ? speedLevel : 0;
+                    this.dy = (turboBoost * slowFactor);
+                } else {
+                    // Non-player car
+                    // May slightly adjust horizontal position to appear more dynamic
+                    if (Math.random() < 0.02) {
+                        this.dx = (Math.random() - 0.5) * canvas.width * 0.002;
+                    }
+                }
+
+                this.x += this.dx;
+                this.y += this.dy;
+
+                // Keep car within road boundaries
+                this.x = Math.max(roadX, Math.min(this.x, roadX + roadWidth - this.width));
+                this.y = this.isPlayer ? Math.max(0, Math.min(this.y, canvas.height - this.height)) : this.y;
+
+                // Update shadow position for jumping car
+                this.shadowY = this.originalY + this.height;
+            }
+        }
+
+        // Oncoming car
+        class OncomingCar {
+            constructor() {
+                this.width = canvas.width * 0.06;
+                this.height = this.width * 1.4;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.color = carColors[Math.floor(Math.random() * carColors.length)];
+                this.wobble = Math.random() < 0.3; // Some cars wobble
+                this.wobbleAmount = 0;
+                this.jumpable = true; // Player can jump over it
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 2, this.width / 2, this.height / 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Car body
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // Car roof
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(this.x + this.width * 0.1, this.y + this.height * 0.5, this.width * 0.8, this.height * 0.3);
+
+                // Windshield
+                ctx.fillStyle = '#87CEFA';
+                ctx.fillRect(this.x + this.width * 0.15, this.y + this.height * 0.75, this.width * 0.7, this.height * 0.15);
+
+                // Wheels
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(this.x - this.width * 0.1, this.y + this.height * 0.2, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x - this.width * 0.1, this.y + this.height * 0.6, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x + this.width * 0.9, this.y + this.height * 0.2, this.width * 0.2, this.height * 0.2);
+                ctx.fillRect(this.x + this.width * 0.9, this.y + this.height * 0.6, this.width * 0.2, this.height * 0.2);
+
+                // Taillights
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(this.x + this.width * 0.1, this.y + this.height * 0.95, this.width * 0.2, this.height * 0.05);
+                ctx.fillRect(this.x + this.width * 0.7, this.y + this.height * 0.95, this.width * 0.2, this.height * 0.05);
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+
+                if (this.wobble) {
+                    this.wobbleAmount += 0.03;
+                    this.x += Math.sin(this.wobbleAmount) * 1.5;
+                    this.x = Math.max(roadX, Math.min(this.x, roadX + roadWidth - this.width));
+                }
+            }
+        }
+
+        // Motorbike class
+        class Motorbike {
+            constructor() {
+                this.width = canvas.width * 0.04;
+                this.height = this.width * 2;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.color = '#FF4040'; // Red
+                this.wobble = true;
+                this.wobbleAmount = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 2, this.width / 2, this.height / 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bike body
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y + this.height * 0.3, this.width, this.height * 0.5);
+
+                // Wheels
+                ctx.fillStyle = '#333333';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height * 0.2, this.width * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height * 0.8, this.width * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rider
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(this.x - this.width * 0.2, this.y + this.height * 0.1, this.width * 1.4, this.height * 0.3);
+
+                // Handlebars
+                ctx.fillStyle = '#BBBBBB';
+                ctx.fillRect(this.x - this.width * 0.3, this.y + this.height * 0.25, this.width * 1.6, this.height * 0.05);
+            }
+
+            update() {
+                this.y += canvas.height * 0.004 * speedLevel * (turboActive ? 1.5 : 1);
+
+                if (this.wobble) {
+                    this.wobbleAmount += 0.05;
+                    this.x += Math.sin(this.wobbleAmount) * 2;
+                    this.x = Math.max(roadX, Math.min(this.x, roadX + roadWidth - this.width));
+                }
+            }
+        }
+
+        // Bicycle class
+        class Bicycle {
+            constructor() {
+                this.width = canvas.width * 0.03;
+                this.height = this.width * 2;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.color = '#228B22'; // Green
+                this.wobble = true;
+                this.wobbleAmount = 0;
+                this.jumpable = true;
+                this.wobbleStrength = 0.07 + Math.random() * 0.05;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 2, this.width / 2, this.height / 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bicycle frame
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + this.height * 0.2);
+                ctx.lineTo(this.x + this.width / 2, this.y + this.height * 0.5);
+                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.8);
+                ctx.moveTo(this.x + this.width / 2, this.y + this.height * 0.5);
+                ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.8);
+                ctx.stroke();
+
+                // Wheels
+                ctx.beginPath();
+                ctx.strokeStyle = '#333333';
+                ctx.lineWidth = 2;
+                ctx.arc(this.x + this.width * 0.2, this.y + this.height * 0.8, this.width * 0.2, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(this.x + this.width * 0.8, this.y + this.height * 0.8, this.width * 0.2, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Rider
+                ctx.fillStyle = '#333333';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height * 0.1, this.width * 0.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(this.x + this.width * 0.4, this.y + this.height * 0.15, this.width * 0.2, this.height * 0.4);
+            }
+
+            update() {
+                this.y += canvas.height * 0.002 * speedLevel * (turboActive ? 1.5 : 1);
+
+                if (this.wobble) {
+                    this.wobbleAmount += 0.08;
+                    this.x += Math.sin(this.wobbleAmount) * (this.width * this.wobbleStrength);
+                    this.x = Math.max(roadX, Math.min(this.x, roadX + roadWidth - this.width));
+                }
+            }
+        }
+
+        // Rock class (obstacle that requires jumping)
+        class Rock {
+            constructor() {
+                this.width = canvas.width * 0.06 + Math.random() * canvas.width * 0.04;
+                this.height = this.width * 0.7;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.jumpable = false; // Must jump over these
+                this.color = '#8B4513'; // Brown
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 2, this.width / 2, this.height / 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rock body
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + this.height);
+                ctx.lineTo(this.x + this.width * 0.3, this.y + this.height * 0.3);
+                ctx.lineTo(this.x + this.width * 0.7, this.y);
+                ctx.lineTo(this.x + this.width, this.y + this.height * 0.7);
+                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height);
+                ctx.closePath();
+                ctx.fill();
+
+                // Rock details
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width * 0.2, this.y + this.height * 0.5);
+                ctx.lineTo(this.x + this.width * 0.4, this.y + this.height * 0.6);
+                ctx.moveTo(this.x + this.width * 0.6, this.y + this.height * 0.3);
+                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.4);
+                ctx.stroke();
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+            }
+        }
+
+        // Barrier class (requires jumping)
+        class Barrier {
+            constructor() {
+                this.width = canvas.width * 0.15;
+                this.height = canvas.width * 0.04;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.jumpable = false; // Must jump over these
+                this.color = '#FF8C00'; // Orange
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 2, this.width / 2, this.height / 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Barrier body
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // Stripes
+                ctx.fillStyle = '#000000';
+                const stripeWidth = this.width / 5;
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillRect(this.x + stripeWidth * (i * 2), this.y, stripeWidth, this.height);
+                }
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+            }
+        }
+
+        // Passenger class
+        class Passenger {
+            constructor() {
+                this.width = canvas.width * 0.05;
+                this.height = this.width;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.bounce = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Passenger body with bounce effect
+                const bounceOffset = Math.sin(this.bounce) * 3;
+
+                // Head
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2 + bounceOffset, this.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(this.x + this.width * 0.3, this.y + this.height * 0.4 + bounceOffset, this.width * 0.1, this.width * 0.1);
+                ctx.fillRect(this.x + this.width * 0.6, this.y + this.height * 0.4 + bounceOffset, this.width * 0.1, this.width * 0.1);
+
+                // Smile
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height * 0.6 + bounceOffset, this.width * 0.2, 0, Math.PI);
+                ctx.stroke();
+
+                // Arms waving
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width * 0.2, this.y + this.height * 0.5 + bounceOffset);
+                ctx.lineTo(this.x - this.width * 0.1, this.y + this.height * 0.3 + Math.sin(this.bounce * 2) * 5);
+                ctx.moveTo(this.x + this.width * 0.8, this.y + this.height * 0.5 + bounceOffset);
+                ctx.lineTo(this.x + this.width * 1.1, this.y + this.height * 0.3 + Math.sin(this.bounce * 2 + Math.PI) * 5);
+                ctx.stroke();
+            }
+
+            update() {
+                this.y += canvas.height * 0.002 * speedLevel * (turboActive ? 1.5 : 1);
+                this.bounce += 0.1;
+            }
+        }
+
+        // Coin class
+        class Coin {
+            constructor() {
+                this.width = canvas.width * 0.04;
+                this.height = this.width;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.rotation = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Coin body with 3D effect through rotation
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(this.rotation);
+
+                // Outer coin
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.width / 2, this.height / 2 * Math.abs(Math.cos(this.rotation)), 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner coin detail
+                ctx.fillStyle = '#FFC000';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.width / 3, this.height / 3 * Math.abs(Math.cos(this.rotation)), 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Shine effect
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.ellipse(-this.width / 6, -this.height / 6, this.width / 10, this.height / 10 * Math.abs(Math.cos(this.rotation)), 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+                this.rotation += 0.1;
+            }
+        }
+
+        // Turbo class
+        class Turbo {
+            constructor() {
+                this.width = canvas.width * 0.06;
+                this.height = this.width;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.glow = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow effect
+                const glowSize = 5 + Math.sin(this.glow) * 3;
+                ctx.shadowColor = '#00B7EB';
+                ctx.shadowBlur = glowSize;
+
+                // Turbo body
+                ctx.fillStyle = '#00B7EB';
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y);
+                ctx.lineTo(this.x + this.width, this.y + this.height * 0.6);
+                ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.6);
+                ctx.lineTo(this.x + this.width * 0.7, this.y + this.height);
+                ctx.lineTo(this.x + this.width * 0.3, this.y + this.height);
+                ctx.lineTo(this.x + this.width * 0.3, this.y + this.height * 0.6);
+                ctx.lineTo(this.x, this.y + this.height * 0.6);
+                ctx.closePath();
+                ctx.fill();
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
+
+                // Turbo text
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold ' + (this.width * 0.5) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('T', this.x + this.width / 2, this.y + this.height / 2);
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+                this.glow += 0.1;
+            }
+        }
+
+        // Oil class
+        class Oil {
+            constructor() {
+                this.width = canvas.width * 0.1;
+                this.height = canvas.width * 0.05;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Oil puddle
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Oil shine
+                ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width * 0.3, this.y + this.height * 0.3, this.width * 0.15, this.height * 0.15, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Warning text
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold ' + (this.width * 0.3) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('OIL', this.x + this.width / 2, this.y + this.height / 2);
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+            }
+        }
+
+        // Water class
+        class Water {
+            constructor() {
+                this.width = canvas.width * 0.1;
+                this.height = canvas.width * 0.05;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.ripple = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Water puddle
+                ctx.fillStyle = 'rgba(30, 144, 255, 0.6)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Water ripples
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                // Draw multiple ripple circles
+                for (let i = 0; i < 3; i++) {
+                    const radius = (i + 1) * this.width * 0.15;
+                    const offset = Math.sin(this.ripple + i * Math.PI / 3) * this.width * 0.05;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2 + offset, this.y + this.height / 2, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+                this.ripple += 0.1;
+            }
+        }
+
+        // Jump Boost class
+        class JumpBoost {
+            constructor() {
+                this.width = canvas.width * 0.06;
+                this.height = this.width;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.pulse = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pulse effect
+                const pulseSize = 3 + Math.sin(this.pulse) * 2;
+                ctx.shadowColor = '#32CD32';
+                ctx.shadowBlur = pulseSize;
+
+                // Jump boost icon
+                ctx.fillStyle = '#32CD32';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 - 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
+
+                // Up arrow
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + this.height * 0.2);
+                ctx.lineTo(this.x + this.width * 0.8, this.y + this.height * 0.6);
+                ctx.lineTo(this.x + this.width * 0.6, this.y + this.height * 0.6);
+                ctx.lineTo(this.x + this.width * 0.6, this.y + this.height * 0.8);
+                ctx.lineTo(this.x + this.width * 0.4, this.y + this.height * 0.8);
+                ctx.lineTo(this.x + this.width * 0.4, this.y + this.height * 0.6);
+                ctx.lineTo(this.x + this.width * 0.2, this.y + this.height * 0.6);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+                this.pulse += 0.1;
+            }
+        }
+
+        // Shield class
+        class Shield {
+            constructor() {
+                this.width = canvas.width * 0.06;
+                this.height = this.width;
+                this.x = roadX + Math.random() * (roadWidth - this.width);
+                this.y = -this.height;
+                this.pulse = 0;
+                this.jumpable = true;
+            }
+
+            draw() {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width / 2, this.y + this.height + 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pulse effect
+                const pulseSize = 3 + Math.sin(this.pulse) * 2;
+                ctx.shadowColor = '#9932CC';
+                ctx.shadowBlur = pulseSize;
+
+                // Shield shape
+                ctx.fillStyle = '#9932CC';
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + this.height * 0.1);
+                ctx.lineTo(this.x + this.width * 0.85, this.y + this.height * 0.3);
+                ctx.lineTo(this.x + this.width * 0.85, this.y + this.height * 0.7);
+                ctx.lineTo(this.x + this.width / 2, this.y + this.height * 0.9);
+                ctx.lineTo(this.x + this.width * 0.15, this.y + this.height * 0.7);
+                ctx.lineTo(this.x + this.width * 0.15, this.y + this.height * 0.3);
+                ctx.closePath();
+                ctx.fill();
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
+
+                // Star in middle
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                const centerX = this.x + this.width / 2;
+                const centerY = this.y + this.height / 2;
+                const starPoints = 5;
+                const outerRadius = this.width * 0.2;
+                const innerRadius = this.width * 0.1;
+
+                for (let i = 0; i < starPoints * 2; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const angle = (Math.PI * i) / starPoints;
+                    const x = centerX + radius * Math.sin(angle);
+                    const y = centerY + radius * Math.cos(angle);
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                this.y += canvas.height * 0.003 * speedLevel * (turboActive ? 1.5 : 1);
+                this.pulse += 0.1;
+            }
+        }
+
+        // Floating Score class
+        class FloatingScore {
+            constructor(x, y, value, color = '#FFD700') {
+                this.x = x;
+                this.y = y;
+                this.value = value;
+                this.color = color;
+                this.opacity = 1;
+                this.lifetime = 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.font = 'bold ' + (canvas.width * 0.04) + 'px Comic Sans MS';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.value, this.x, this.y);
+                ctx.restore();
+            }
+
+            update() {
+                this.y -= 1;
+                this.lifetime += 1;
+                this.opacity = 1 - (this.lifetime / 60);
+
+                return this.lifetime < 60; // Return false when expired
+            }
+        }
+
+        // Initialize cars
+        function initCars() {
+            cars.length = 0;
+            cars.push(new Car(roadX + roadWidth / 2 - canvas.width * 0.03, canvas.height - canvas.width * 0.1, carColors[0], true));
+
+            // The player car's original Y position
+            cars[0].originalY = cars[0].y;
+
+            // Generate a few cars ahead
+            const offsets = [0.2, 0.4, 0.6, 0.8];
+            for (let i = 1; i < 5; i++) {
+                const xPos = roadX + roadWidth * offsets[i - 1] % roadWidth;
+                const yPos = canvas.height * 0.7 - i * canvas.height * 0.2;
+                cars.push(new Car(xPos, yPos, carColors[i]));
+            }
+        }
+
+        // Update health display
+        function updateHealthDisplay() {
+            healthDisplay.innerHTML = '';
+            for (let i = 0; i < hearts; i++) {
+                const heart = document.createElement('span');
+                heart.className = 'health-heart';
+                heart.textContent = '❤️';
+                healthDisplay.appendChild(heart);
+            }
+        }
+
+        // Draw road
+        function drawRoad() {
+            // Draw sky gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, '#87CEEB'); // Sky blue
+            skyGradient.addColorStop(1, '#E0FFFF'); // Light cyan
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grass
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw road with gradient
+            const roadGradient = ctx.createLinearGradient(roadX, 0, roadX + roadWidth, 0);
+            roadGradient.addColorStop(0, '#696969');
+            roadGradient.addColorStop(0.5, '#808080');
+            roadGradient.addColorStop(1, '#696969');
+            ctx.fillStyle = roadGradient;
+            ctx.fillRect(roadX, 0, roadWidth, canvas.height);
+
+            // Draw road edges
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(roadX - 2, 0, 4, canvas.height);
+            ctx.fillRect(roadX + roadWidth - 2, 0, 4, canvas.height);
+
+            // Draw animated lane markings
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.setLineDash([20, 20]);
+            ctx.moveTo(roadX + roadWidth / 2, laneOffset % 40 - 40);
+            ctx.lineTo(roadX + roadWidth / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw scrolling environment elements (trees, houses, etc)
+            drawEnvironment();
+        }
+
+        // Draw environment elements
+        function drawEnvironment() {
+            // Trees on left side
+            for (let i = 0; i < 5; i++) {
+                const y = (laneOffset * 2 + i * 150) % (canvas.height + 100) - 50;
+                drawTree(roadX * 0.5, y, roadX * 0.4);
+            }
+
+            // Trees on right side
+            for (let i = 0; i < 5; i++) {
+                const y = (laneOffset * 2 + i * 120 + 60) % (canvas.height + 100) - 50;
+                drawTree(roadX + roadWidth + roadX * 0.25, y, roadX * 0.4);
+            }
+
+            // Houses on left side
+            for (let i = 0; i < 2; i++) {
+                const y = (laneOffset + i * 300) % (canvas.height + 200) - 100;
+                drawHouse(roadX * 0.15, y, roadX * 0.6);
+            }
+
+            // Houses on right side
+            for (let i = 0; i < 2; i++) {
+                const y = (laneOffset + i * 350 + 150) % (canvas.height + 200) - 100;
+                drawHouse(roadX + roadWidth + roadX * 0.05, y, roadX * 0.6);
+            }
+        }
+
+        // Draw a tree
+        function drawTree(x, y, size) {
+            // Tree trunk
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x + size * 0.4, y + size * 0.6, size * 0.2, size * 0.4);
+
+            // Tree foliage
+            ctx.fillStyle = '#006400';
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.5, y);
+            ctx.lineTo(x + size, y + size * 0.5);
+            ctx.lineTo(x, y + size * 0.5);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.5, y + size * 0.2);
+            ctx.lineTo(x + size, y + size * 0.7);
+            ctx.lineTo(x, y + size * 0.7);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Draw a house
+        function drawHouse(x, y, size) {
+            // House base
+            ctx.fillStyle = '#CD5C5C';
+            ctx.fillRect(x, y + size * 0.3, size, size * 0.7);
+
+            // Roof
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.1, y + size * 0.3);
+            ctx.lineTo(x + size * 0.5, y);
+            ctx.lineTo(x + size * 1.1, y + size * 0.3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Windows
+            ctx.fillStyle = '#87CEFA';
+            ctx.fillRect(x + size * 0.2, y + size * 0.5, size * 0.2, size * 0.2);
+            ctx.fillRect(x + size * 0.6, y + size * 0.5, size * 0.2, size * 0.2);
+
+            // Door
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x + size * 0.4, y + size * 0.7, size * 0.2, size * 0.3);
+
+            // Door knob
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.55, y + size * 0.85, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Collision detection
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y;
+        }
+
+        // Check if player is jumping over obstacle
+        function checkJumpOver(player, obstacle) {
+            // If the player is jumping and the obstacle is not jumpable, it's a collision
+            if (!obstacle.jumpable && isJumping && jumpHeight > obstacle.height * 0.8) {
+                return true; // Successfully jumped over
+            }
+            return false;
+        }
+
+        // Save high score
+        function saveHighScore() {
+            const highScores = JSON.parse(localStorage.getItem('highScores') || '[]');
+            highScores.push({
+                name: playerName,
+                score: score,
+                maxCombo: maxCombo,
+                distance: Math.floor(distance / 10)
+            });
+            highScores.sort((a, b) => b.score - a.score);
+            highScores.splice(10); // Keep top 10
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+        }
+
+        // Show high scores
+        function showHighScores() {
+            const highScores = JSON.parse(localStorage.getItem('highScores') || '[]');
+            let html = '<table style="width:100%; border-collapse:collapse; margin:0 auto; color:#333;">';
+            html += '<tr style="background-color:#FFD700; font-weight:bold;"><th style="padding:8px; border:2px solid #FF69B4;">Rank</th><th style="padding:8px; border:2px solid #FF69B4;">Name</th><th style="padding:8px; border:2px solid #FF69B4;">Score</th><th style="padding:8px; border:2px solid #FF69B4;">Max Combo</th><th style="padding:8px; border:2px solid #FF69B4;">Distance</th></tr>';
+
+            if (highScores.length === 0) {
+                html += '<tr><td colspan="5" style="text-align:center; padding:10px; border:2px solid #FF69B4;">No scores yet! Be the first!</td></tr>';
+            } else {
+                highScores.forEach((score, index) => {
+                    const bgColor = index % 2 === 0 ? '#FFFFE0' : '#FFFACD';
+                    html += `<tr style="background-color:${bgColor}">
+                        <td style="padding:8px; border:2px solid #FF69B4; text-align:center;">${index + 1}</td>
+                        <td style="padding:8px; border:2px solid #FF69B4;">${score.name || 'Anonymous'}</td>
+                        <td style="padding:8px; border:2px solid #FF69B4; text-align:right;">${score.score}</td>
+                        <td style="padding:8px; border:2px solid #FF69B4; text-align:center;">${score.maxCombo}x</td>
+                        <td style="padding:8px; border:2px solid #FF69B4; text-align:right;">${score.distance}m</td>
+                    </tr>`;
+                });
+            }
+
+            html += '</table>';
+
+            Swal.fire({
+                title: '🏆 High Scores 🏆',
+                html: html,
+                confirmButtonText: 'Close',
+                confirmButtonColor: '#FF69B4',
+                width: '80%',
+                background: '#FFFFE0',
+                customClass: {
+                    popup: 'swal-high-score'
+                }
+            });
+        }
+
+        // Game over function
+        function gameOver() {
+            gameRunning = false;
+            saveHighScore();
+
+            Swal.fire({
+                title: '¡Juego Terminado!',
+                html: `
+                    <div style="margin:15px 0;">
+                        <p style="font-size:1.2em;">¡Puntuación: <b>${score}</b>!</p>
+                        <p>Combo máximo: <b>${maxCombo}x</b></p>
+                        <p>Distancia: <b>${Math.floor(distance / 10)}m</b></p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Jugar de Nuevo',
+                showCancelButton: true,
+                cancelButtonText: 'Ver Puntuaciones',
+                confirmButtonColor: '#32CD32',
+                cancelButtonColor: '#FF69B4'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    resetGame();
+                } else {
+                    showHighScores();
+                    setTimeout(resetGame, 1000);
+                }
+            });
+        }
+
+        // Reset game
+        function resetGame() {
+            score = 0;
+            hearts = 3;
+            distance = 0;
+            speedLevel = 1;
+            combo = 0;
+            comboMultiplier = 1;
+            comboTimer = 0;
+            maxCombo = 0;
+            jumpCooldown = 0;
+            canJump = true;
+            isJumping = false;
+            jumpHeight = 0;
+            jumpVelocity = 0;
+            turboActive = false;
+            slowActive = false;
+            slowFactor = 1;
+            invincible = false;
+
+            // Reset arrays
+            oncomingCars.length = 0;
+            passengers.length = 0;
+            coins.length = 0;
+            turbos.length = 0;
+            oils.length = 0;
+            waters.length = 0;
+            motorbikes.length = 0;
+            bicycles.length = 0;
+            rocks.length = 0;
+            barriers.length = 0;
+            jumpBoosts.length = 0;
+            shields.length = 0;
+            floatingScores.length = 0;
+
+            // Initialize player car
+            initCars();
+
+            // Update display
+            scoreElement.textContent = score;
+            comboElement.textContent = combo;
+            progressBar.value = 0;
+            updateHealthDisplay();
+
+            // Start game
+            gameRunning = true;
+            startTime = Date.now();
+            requestAnimationFrame(gameLoop);
+
+            // Show tutorial again
+            tutorialOverlay.style.display = 'flex';
+        }
+
+        // Start tutorial
+        function startTutorial() {
+            Swal.fire({
+                title: '¡Bienvenido a Driver FRVR!',
+                html: `
+                    <div style="text-align:left; margin:15px 0;">
+                        <p>🏁 Conduce tu coche y evita obstáculos</p>
+                        <p>🚶 Recoge pasajeros para ganar puntos</p>
+                        <p>💰 Recolecta monedas para aumentar tu puntuación</p>
+                        <p>💨 Los turbos te harán ir más rápido</p>
+                        <p>🛡️ Los escudos te protegen de daños</p>
+                    </div>
+                    <p style="margin-top:15px;">¿Cuál es tu nombre?</p>
+                `,
+                input: 'text',
+                inputPlaceholder: 'Ingresa tu nombre',
+                confirmButtonText: '¡Jugar!',
+                confirmButtonColor: '#32CD32',
+                showClass: {
+                    popup: 'animate__animated animate__fadeIn'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOut'
+                }
+            }).then((result) => {
+                playerName = result.value || 'Jugador';
+                tutorialOverlay.style.display = 'none';
+                gameRunning = true;
+                startTime = Date.now();
+                requestAnimationFrame(gameLoop);
+            });
+        }
+
+        // Jump function
+        function jump() {
+            if (!canJump || isJumping) return;
+
+            isJumping = true;
+            jumpVelocity = canvas.height * 0.02; // Initial jump velocity
+            playSound('jump');
+
+            // Start cooldown
+            canJump = false;
+            jumpCooldown = 1.5; // seconds
+
+            // Add a visual cooldown indicator
+            const cooldownIndicator = document.createElement('div');
+            cooldownIndicator.className = 'jump-cooldown';
+            jumpBtn.appendChild(cooldownIndicator);
+
+            // Animate cooldown
+            const cooldownInterval = setInterval(() => {
+                jumpCooldown -= 0.1;
+                cooldownIndicator.style.width = (jumpCooldown / 1.5 * 100) + '%';
+
+                if (jumpCooldown <= 0) {
+                    clearInterval(cooldownInterval);
+                    canJump = true;
+                    if (cooldownIndicator.parentNode) {
+                        cooldownIndicator.parentNode.removeChild(cooldownIndicator);
+                    }
+                }
+            }, 100);
+        }
+
+        // Create floating score text
+        function createFloatingScore(x, y, value, color = '#FFD700') {
+            floatingScores.push(new FloatingScore(x, y, value, color));
+        }
+
+        // Handle obstacles and powerups
+        function spawnObstacles() {
+            // Increase spawn rate based on speed level
+            const baseRate = 0.01 + (speedLevel * 0.002);
+            const spawnChance = baseRate * (turboActive ? 1.5 : 1);
+
+            if (Math.random() < spawnChance && oncomingCars.length < 5) {
+                oncomingCars.push(new OncomingCar());
+            }
+
+            if (Math.random() < spawnChance * 0.7 && motorbikes.length < 3) {
+                motorbikes.push(new Motorbike());
+            }
+
+            if (Math.random() < spawnChance * 0.5 && bicycles.length < 2) {
+                bicycles.push(new Bicycle());
+            }
+
+            if (Math.random() < spawnChance * 0.3 && rocks.length < 2) {
+                rocks.push(new Rock());
+            }
+
+            if (Math.random() < spawnChance * 0.3 && barriers.length < 2) {
+                barriers.push(new Barrier());
+            }
+
+            // Power-ups and collectibles spawn less frequently
+            if (Math.random() < 0.003 + (speedLevel * 0.0005)) {
+                passengers.push(new Passenger());
+            }
+
+            if (Math.random() < 0.005 + (speedLevel * 0.001)) {
+                coins.push(new Coin());
+            }
+
+            if (Math.random() < 0.002 && turbos.length < 1) {
+                turbos.push(new Turbo());
+            }
+
+            if (Math.random() < 0.003 && oils.length < 2) {
+                oils.push(new Oil());
+            }
+
+            if (Math.random() < 0.003 && waters.length < 2) {
+                waters.push(new Water());
+            }
+
+            if (Math.random() < 0.002 && jumpBoosts.length < 1) {
+                jumpBoosts.push(new JumpBoost());
+            }
+
+            if (Math.random() < 0.001 && shields.length < 1) {
+                shields.push(new Shield());
+            }
+        }
+
+        // Handle collisions
+        function handleCollisions() {
+            const player = cars[0];
+
+            // Check collision with oncoming cars
+            for (let i = 0; i < oncomingCars.length; i++) {
+                if (checkCollision(player, oncomingCars[i])) {
+                    if (!invincible) {
+                        handleDamage();
+                        oncomingCars.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with motorbikes
+            for (let i = 0; i < motorbikes.length; i++) {
+                if (checkCollision(player, motorbikes[i])) {
+                    if (!invincible) {
+                        handleDamage();
+                        motorbikes.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with bicycles
+            for (let i = 0; i < bicycles.length; i++) {
+                if (checkCollision(player, bicycles[i])) {
+                    if (!invincible) {
+                        // Bicycles cause less damage (just break combo)
+                        combo = 0;
+                        comboMultiplier = 1;
+                        comboElement.textContent = combo;
+                        canvas.classList.add('flash');
+                        setTimeout(() => canvas.classList.remove('flash'), 300);
+                        bicycles.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with rocks
+            for (let i = 0; i < rocks.length; i++) {
+                if (checkCollision(player, rocks[i])) {
+                    if (checkJumpOver(player, rocks[i])) {
+                        // Successfully jumped over rock
+                        increaseScore(50, rocks[i].x, rocks[i].y);
+                        playSound('jump');
+                        rocks.splice(i, 1);
+                        i--;
+                    } else if (!invincible) {
+                        handleDamage();
+                        rocks.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with barriers
+            for (let i = 0; i < barriers.length; i++) {
+                if (checkCollision(player, barriers[i])) {
+                    if (checkJumpOver(player, barriers[i])) {
+                        // Successfully jumped over barrier
+                        increaseScore(40, barriers[i].x, barriers[i].y);
+                        playSound('jump');
+                        barriers.splice(i, 1);
+                        i--;
+                    } else if (!invincible) {
+                        handleDamage();
+                        barriers.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with passengers
+            for (let i = 0; i < passengers.length; i++) {
+                if (checkCollision(player, passengers[i])) {
+                    increaseScore(100, passengers[i].x, passengers[i].y);
+                    passengers.splice(i, 1);
+                    i--;
+                    playSound('passenger');
+
+                    // Show pickup message
+                    Toast.fire({
+                        icon: 'success',
+                        title: '¡Pasajero recogido! +100'
+                    });
+                }
+            }
+
+            // Check collision with coins
+            for (let i = 0; i < coins.length; i++) {
+                if (checkCollision(player, coins[i])) {
+                    increaseScore(25, coins[i].x, coins[i].y);
+                    coins.splice(i, 1);
+                    i--;
+                    playSound('coin');
+                }
+            }
+
+            // Check collision with turbo
+            for (let i = 0; i < turbos.length; i++) {
+                if (checkCollision(player, turbos[i])) {
+                    activateTurbo();
+                    turbos.splice(i, 1);
+                    i--;
+                    playSound('turbo');
+
+                    Toast.fire({
+                        icon: 'info',
+                        title: '¡TURBO activado!'
+                    });
+                }
+            }
+
+            // Check collision with oil
+            for (let i = 0; i < oils.length; i++) {
+                if (checkCollision(player, oils[i])) {
+                    if (!invincible && !isJumping) {
+                        activateSlow();
+                        oils.splice(i, 1);
+                        i--;
+                        playSound('crash');
+
+                        Toast.fire({
+                            icon: 'warning',
+                            title: '¡Aceite! Movimiento más lento'
+                        });
+                    } else if (isJumping) {
+                        // Successfully jumped over oil
+                        increaseScore(30, oils[i].x, oils[i].y);
+                        oils.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with water
+            for (let i = 0; i < waters.length; i++) {
+                if (checkCollision(player, waters[i])) {
+                    if (!invincible && !isJumping) {
+                        activateSlow();
+                        waters.splice(i, 1);
+                        i--;
+
+                        Toast.fire({
+                            icon: 'warning',
+                            title: '¡Agua! Movimiento más lento'
+                        });
+                    } else if (isJumping) {
+                        // Successfully jumped over water
+                        increaseScore(20, waters[i].x, waters[i].y);
+                        waters.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            // Check collision with jump boost
+            for (let i = 0; i < jumpBoosts.length; i++) {
+                if (checkCollision(player, jumpBoosts[i])) {
+                    // Reset jump cooldown
+                    canJump = true;
+                    jumpCooldown = 0;
+
+                    // Remove any cooldown indicator
+                    const cooldownIndicator = jumpBtn.querySelector('.jump-cooldown');
+                    if (cooldownIndicator) {
+                        jumpBtn.removeChild(cooldownIndicator);
+                    }
+
+                    jumpBoosts.splice(i, 1);
+                    i--;
+                    playSound('jump');
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: '¡Salto refrescado!'
+                    });
+                }
+            }
+
+            // Check collision with shield
+            for (let i = 0; i < shields.length; i++) {
+                if (checkCollision(player, shields[i])) {
+                    activateShield();
+                    shields.splice(i, 1);
+                    i--;
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: '¡Escudo activado! (3 segundos)'
+                    });
+                }
+            }
+        }
+
+        // Handle damage
+        function handleDamage() {
+            if (Date.now() - startTime < gracePeriod) return; // Grace period at game start
+
+            hearts--;
+            updateHealthDisplay();
+            playSound('crash');
+
+            // Reset combo
+            combo = 0;
+            comboMultiplier = 1;
+            comboElement.textContent = combo;
+
+            // Visual feedback
+            canvas.classList.add('flash');
+            setTimeout(() => canvas.classList.remove('flash'), 300);
+
+            // Check for game over
+            if (hearts <= 0) {
+                gameOver();
+            }
+        }
+
+        // Increase score with combo multiplier
+        function increaseScore(points, x, y) {
+            const bonusPoints = points * comboMultiplier;
+            score += bonusPoints;
+            scoreElement.textContent = score;
+
+            // Create floating score text
+            createFloatingScore(x, y, `+${bonusPoints}`, comboMultiplier > 1 ? '#FF69B4' : '#FFD700');
+
+            // Increase combo
+            combo++;
+            comboMultiplier = 1 + Math.floor(combo / 5) * 0.5; // +0.5 for every 5 combo
+            comboTimer = 3; // Reset combo timer (3 seconds)
+
+            // Update max combo
+            if (combo > maxCombo) {
+                maxCombo = combo;
+            }
+
+            // Update combo display
+            comboElement.textContent = combo;
+        }
+
+        // Activate turbo
+        function activateTurbo() {
+            turboActive = true;
+            turboEndTime = Date.now() + 5000; // 5 seconds of turbo
+            powerupIndicator.textContent = '🚀 TURBO';
+            powerupIndicator.style.display = 'block';
+        }
+
+        // Activate slow
+        function activateSlow() {
+            slowActive = true;
+            slowFactor = 0.5; // 50% speed
+            slowEndTime = Date.now() + 3000; // 3 seconds of slow
+            powerupIndicator.textContent = '🐢 LENTO';
+            powerupIndicator.style.display = 'block';
+        }
+
+        // Activate shield
+        function activateShield() {
+            invincible = true;
+            invincibleEndTime = Date.now() + 3000; // 3 seconds of invincibility
+            powerupIndicator.textContent = '🛡️ ESCUDO';
+            powerupIndicator.style.display = 'block';
+        }
+
+        // Update level progress
+        function updateProgress() {
+            const levelDistance = 1000; // 1000 units to complete level
+            const currentLevelProgress = (distance % levelDistance) / levelDistance * 100;
+            progressBar.value = currentLevelProgress;
+
+            // Level up when progress reaches 100%
+            if (distance > 0 && distance % levelDistance < 5) {
+                if (speedLevel < 10) { // Max level 10
+                    speedLevel = Math.floor(distance / levelDistance) + 1;
+
+                    Toast.fire({
+                        icon: 'success',
+                        title: `¡Nivel ${speedLevel}!`,
+                        text: 'La velocidad aumenta'
+                    });
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw road and environment
+            drawRoad();
+
+            // Update lane offset for animation
+            laneOffset += speedLevel * (turboActive ? 2 : 1) * slowFactor;
+
+            // Spawn obstacles
+            spawnObstacles();
+
+            // Update and draw all game elements
+            for (const car of cars) {
+                car.update();
+                car.draw();
+            }
+
+            // Update and draw oncoming cars
+            for (let i = 0; i < oncomingCars.length; i++) {
+                oncomingCars[i].update();
+                oncomingCars[i].draw();
+
+                // Remove if off screen
+                if (oncomingCars[i].y > canvas.height) {
+                    oncomingCars.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw motorbikes
+            for (let i = 0; i < motorbikes.length; i++) {
+                motorbikes[i].update();
+                motorbikes[i].draw();
+
+                if (motorbikes[i].y > canvas.height) {
+                    motorbikes.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw bicycles
+            for (let i = 0; i < bicycles.length; i++) {
+                bicycles[i].update();
+                bicycles[i].draw();
+
+                if (bicycles[i].y > canvas.height) {
+                    bicycles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw rocks
+            for (let i = 0; i < rocks.length; i++) {
+                rocks[i].update();
+                rocks[i].draw();
+
+                if (rocks[i].y > canvas.height) {
+                    rocks.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw barriers
+            for (let i = 0; i < barriers.length; i++) {
+                barriers[i].update();
+                barriers[i].draw();
+
+                if (barriers[i].y > canvas.height) {
+                    barriers.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw passengers
+            for (let i = 0; i < passengers.length; i++) {
+                passengers[i].update();
+                passengers[i].draw();
+
+                if (passengers[i].y > canvas.height) {
+                    passengers.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw coins
+            for (let i = 0; i < coins.length; i++) {
+                coins[i].update();
+                coins[i].draw();
+
+                if (coins[i].y > canvas.height) {
+                    coins.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw turbos
+            for (let i = 0; i < turbos.length; i++) {
+                turbos[i].update();
+                turbos[i].draw();
+
+                if (turbos[i].y > canvas.height) {
+                    turbos.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw oils
+            for (let i = 0; i < oils.length; i++) {
+                oils[i].update();
+                oils[i].draw();
+
+                if (oils[i].y > canvas.height) {
+                    oils.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw waters
+            for (let i = 0; i < waters.length; i++) {
+                waters[i].update();
+                waters[i].draw();
+
+                if (waters[i].y > canvas.height) {
+                    waters.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw jump boosts
+            for (let i = 0; i < jumpBoosts.length; i++) {
+                jumpBoosts[i].update();
+                jumpBoosts[i].draw();
+
+                if (jumpBoosts[i].y > canvas.height) {
+                    jumpBoosts.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw shields
+            for (let i = 0; i < shields.length; i++) {
+                shields[i].update();
+                shields[i].draw();
+
+                if (shields[i].y > canvas.height) {
+                    shields.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update and draw floating scores
+            for (let i = 0; i < floatingScores.length; i++) {
+                if (floatingScores[i].update()) {
+                    floatingScores[i].draw();
+                } else {
+                    floatingScores.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Update jump mechanics
+            if (isJumping) {
+                jumpHeight += jumpVelocity;
+                jumpVelocity -= canvas.height * 0.001; // Gravity
+
+                if (jumpHeight <= 0) {
+                    isJumping = false;
+                    jumpHeight = 0;
+                    jumpVelocity = 0;
+                }
+            }
+
+            // Check for collisions
+            handleCollisions();
+
+            // Update combo timer
+            if (combo > 0) {
+                comboTimer -= 1 / 60; // Assuming 60fps
+                if (comboTimer <= 0) {
+                    combo = 0;
+                    comboMultiplier = 1;
+                    comboElement.textContent = combo;
+                }
+            }
+
+            // Check turbo status
+            if (turboActive && Date.now() > turboEndTime) {
+                turboActive = false;
+                powerupIndicator.style.display = 'none';
+            }
+
+            // Check slow status
+            if (slowActive && Date.now() > slowEndTime) {
+                slowActive = false;
+                slowFactor = 1;
+                powerupIndicator.style.display = 'none';
+            }
+
+            // Check shield status
+            if (invincible && Date.now() > invincibleEndTime) {
+                invincible = false;
+                powerupIndicator.style.display = 'none';
+            }
+
+            // Show active powerup with highest priority
+            if (invincible) {
+                powerupIndicator.textContent = '🛡️ ESCUDO';
+                powerupIndicator.style.display = 'block';
+            } else if (turboActive) {
+                powerupIndicator.textContent = '🚀 TURBO';
+                powerupIndicator.style.display = 'block';
+            } else if (slowActive) {
+                powerupIndicator.textContent = '🐢 LENTO';
+                powerupIndicator.style.display = 'block';
+            }
+
+            // Increase distance
+            distance += speedLevel * (turboActive ? 2 : 1) * slowFactor;
+
+            // Update level progress
+            updateProgress();
+
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+
+            if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') && gameRunning) {
+                jump();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Touch controls for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchMoveDistance = 0;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!gameRunning) return;
+
+            const touch = e.touches[0];
+            const diffX = touch.clientX - touchStartX;
+
+            touchMoveDistance = Math.abs(diffX);
+
+            if (diffX < -20) {
+                keys['ArrowLeft'] = true;
+                keys['ArrowRight'] = false;
+            } else if (diffX > 20) {
+                keys['ArrowLeft'] = false;
+                keys['ArrowRight'] = true;
+            } else {
+                keys['ArrowLeft'] = false;
+                keys['ArrowRight'] = false;
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+
+            // If barely moved, consider it a tap for jump
+            if (touchMoveDistance < 10 && gameRunning) {
+                jump();
+            }
+
+            touchMoveDistance = 0;
+        });
+
+        // UI button controls
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowLeft'] = true;
+            leftBtn.pressed = true;
+        });
+
+        leftBtn.addEventListener('touchend', () => {
+            keys['ArrowLeft'] = false;
+            leftBtn.pressed = false;
+        });
+
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys['ArrowRight'] = true;
+            rightBtn.pressed = true;
+        });
+
+        rightBtn.addEventListener('touchend', () => {
+            keys['ArrowRight'] = false;
+            rightBtn.pressed = false;
+        });
+
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameRunning) {
+                jump();
+            }
+        });
+
+        // Mouse click controls for desktop
+        leftBtn.addEventListener('mousedown', () => {
+            keys['ArrowLeft'] = true;
+            leftBtn.pressed = true;
+        });
+
+        leftBtn.addEventListener('mouseup', () => {
+            keys['ArrowLeft'] = false;
+            leftBtn.pressed = false;
+        });
+
+        rightBtn.addEventListener('mousedown', () => {
+            keys['ArrowRight'] = true;
+            rightBtn.pressed = true;
+        });
+
+        rightBtn.addEventListener('mouseup', () => {
+            keys['ArrowRight'] = false;
+            rightBtn.pressed = false;
+        });
+
+        jumpBtn.addEventListener('click', () => {
+            if (gameRunning) {
+                jump();
+            }
+        });
+
+        // Start game button
+        startGameBtn.addEventListener('click', () => {
+            tutorialOverlay.style.display = 'none';
+            startTutorial();
+        });
+
+        // Initialize game
+        initCars();
+        updateHealthDisplay();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+
+            // Adjust road dimensions
+            roadWidth = canvas.width * 0.8;
+            roadX = (canvas.width - roadWidth) / 2;
+
+            // Reposition player car
+            if (cars.length > 0) {
+                cars[0].x = roadX + roadWidth / 2 - canvas.width * 0.03;
+            }
+        });
+
+        // Show tutorial initially
+        tutorialOverlay.style.display = 'flex';
+    </script>
+</body>
+
+</html>
