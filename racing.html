@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrera FRVR</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #game-canvas {
+            background-color: #444;
+            border: 2px solid #000;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 200px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            border-radius: 10px;
+        }
+
+        #progress-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #4CAF50;
+            border-radius: 0 0 10px 10px;
+            transition: height 0.3s;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+            line-height: 40px;
+        }
+
+        #game-over,
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        #game-over {
+            display: none;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ffd700;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 8px;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .toast {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .damage-indicator {
+            position: absolute;
+            color: red;
+            font-weight: bold;
+            font-size: 16px;
+            animation: float-up 1s forwards;
+            z-index: 50;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+
+        #speed-level {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        #leaderboard {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .leaderboard-content {
+            width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        .heart {
+            display: inline-block;
+            color: red;
+            margin-right: 5px;
+            font-size: 18px;
+        }
+
+        .sweet-alert {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            display: none;
+        }
+
+        .sweet-alert button {
+            margin-top: 10px;
+            padding: 5px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #FFA500;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: explode 1s forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .nitro-indicator {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        #nitro-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00ffff, #0066ff);
+            transition: width 0.3s;
+        }
+
+        .weather {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .rain {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            animation: rain-fall 0.5s linear infinite;
+        }
+
+        @keyframes rain-fall {
+            0% {
+                transform: translateY(-100px);
+            }
+
+            100% {
+                transform: translateY(600px);
+            }
+        }
+
+        .countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: pulse 1s infinite;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="400" height="600"></canvas>
+        <div id="hud">
+            <div>Jugador: <span id="player-name-display">Jugador</span></div>
+            <div>Puntos: <span id="score">0</span></div>
+            <div id="lives">
+                <span class="heart">❤️</span>
+                <span class="heart">❤️</span>
+                <span class="heart">❤️</span>
+            </div>
+        </div>
+        <div id="speed-level">Nivel de velocidad: <span id="level">1</span></div>
+        <div class="progress-container">
+            <div id="progress-bar" style="height: 0%;"></div>
+        </div>
+        <div id="controls">
+            <div class="control-btn" id="left-btn">←</div>
+            <div class="control-btn" id="right-btn">→</div>
+        </div>
+
+        <div id="start-screen">
+            <h2>RACING CAR BABY</h2>
+            <p>¡Compite contra otros autos y llega a la meta!</p>
+            <input type="text" id="player-name" placeholder="Tu nombre" maxlength="15">
+            <button id="start-btn">¡EMPEZAR!</button>
+            <button id="show-leaderboard-btn">Ver Récords</button>
+        </div>
+
+        <div id="game-over">
+            <h2>¡CARRERA TERMINADA!</h2>
+            <div id="result-message">¡Has terminado la carrera!</div>
+            <div>Puntuación: <span id="final-score">0</span></div>
+            <button id="restart-btn">Reiniciar</button>
+            <button id="records-btn">Ver Récords</button>
+        </div>
+
+        <div id="leaderboard">
+            <h2>MEJORES PUNTUACIONES</h2>
+            <div class="leaderboard-content">
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Nombre</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-body">
+                    </tbody>
+                </table>
+            </div>
+            <button id="close-leaderboard-btn">Cerrar</button>
+        </div>
+
+        <div class="nitro-indicator">
+            <div id="nitro-bar"></div>
+        </div>
+        <div class="weather" id="weather"></div>
+        <div class="countdown" id="countdown">3</div>
+
+        <div class="toast" id="toast"></div>
+
+        <div class="sweet-alert" id="sweet-alert">
+            <h3 id="alert-title">¡Alerta!</h3>
+            <p id="alert-message">Mensaje de alerta</p>
+            <button id="alert-btn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración del juego
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const gameOverScreen = document.getElementById('game-over');
+        const startScreen = document.getElementById('start-screen');
+        const leaderboardScreen = document.getElementById('leaderboard');
+        const finalScoreElement = document.getElementById('final-score');
+        const resultMessage = document.getElementById('result-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const startBtn = document.getElementById('start-btn');
+        const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
+        const recordsBtn = document.getElementById('records-btn');
+        const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const playerNameInput = document.getElementById('player-name');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const progressBar = document.getElementById('progress-bar');
+        const levelDisplay = document.getElementById('level');
+        const toast = document.getElementById('toast');
+        const sweetAlert = document.getElementById('sweet-alert');
+        const alertTitle = document.getElementById('alert-title');
+        const alertMessage = document.getElementById('alert-message');
+        const alertBtn = document.getElementById('alert-btn');
+
+        // Nuevos efectos de sonido
+        const collisionSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+        const engineSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+        const skidSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+        const nitroSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+        const countdownSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+
+        // Variables del juego
+        let score = 0;
+        let progress = 0;
+        let speedLevel = 1;
+        let lives = 3;
+        let playerName = "Jugador";
+        let gameActive = false;
+        let roadSpeed = 3;
+        let roadOffset = 0;
+        let lastTime = 0;
+        let totalDistance = 10000; // Distancia total para completar la carrera
+        let currentDistance = 0;
+        let carColors = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33'];
+        let collidedRecently = false;
+
+        // Variables nuevas
+        let nitro = 100;
+        let isNitroActive = false;
+        let weatherIntensity = 0;
+        let lastSkidTime = 0;
+
+        // Jugador (auto principal)
+        const player = {
+            x: canvas.width / 2 - 15,
+            y: canvas.height - 100,
+            width: 30,
+            height: 50,
+            speed: 5,
+            movingLeft: false,
+            movingRight: false,
+            color: '#FFFF00'
+        };
+
+        // Otros autos
+        const opponents = [];
+
+        // Objetos del juego
+        const roadLines = [];
+        const roadLineFrequency = 40;
+        const roadLineHeight = 20;
+
+        // Función para guardar récords
+        function saveRecord(name, score) {
+            let records = JSON.parse(localStorage.getItem('raceRecords') || '[]');
+            records.push({ name, score });
+            records.sort((a, b) => b.score - a.score);
+            records = records.slice(0, 10); // Mantener solo los 10 mejores
+            localStorage.setItem('raceRecords', JSON.stringify(records));
+        }
+
+
+        // Función para crear partículas
+        function createParticles(x, y, count = 20) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${x + Math.random() * 30 - 15}px`;
+                particle.style.top = `${y + Math.random() * 30 - 15}px`;
+                document.getElementById('game-container').appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        // Función para activar nitro
+        function activateNitro() {
+            if (nitro > 0 && !isNitroActive) {
+                isNitroActive = true;
+                roadSpeed *= 1.5;
+                nitroSound.play();
+                document.querySelector('.nitro-indicator').style.display = 'block';
+
+                const nitroInterval = setInterval(() => {
+                    nitro -= 2;
+                    document.getElementById('nitro-bar').style.width = `${nitro}%`;
+
+                    if (nitro <= 0 || !isNitroActive) {
+                        clearInterval(nitroInterval);
+                        isNitroActive = false;
+                        roadSpeed = 3 + speedLevel;
+                        document.querySelector('.nitro-indicator').style.display = 'none';
+                    }
+                }, 100);
+            }
+        }
+
+        // Función para crear lluvia
+        function createRain() {
+            const weatherDiv = document.getElementById('weather');
+            weatherDiv.innerHTML = '';
+
+            for (let i = 0; i < 50 * weatherIntensity; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'rain';
+                drop.style.left = `${Math.random() * 100}%`;
+                drop.style.animationDelay = `${Math.random() * 1}s`;
+                weatherDiv.appendChild(drop);
+            }
+        }
+
+        // Función de cuenta regresiva
+        function startCountdown() {
+            let count = 3;
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.style.display = 'block';
+
+            const countInterval = setInterval(() => {
+                count--;
+                countdownElement.textContent = count;
+                countdownSound.play();
+
+                if (count <= 0) {
+                    clearInterval(countInterval);
+                    countdownElement.style.display = 'none';
+                    gameActive = true;
+                    requestAnimationFrame(update);
+                }
+            }, 1000);
+        }
+
+        // Función para cargar y mostrar récords
+        function loadRecords() {
+            const records = JSON.parse(localStorage.getItem('raceRecords') || '[]');
+            const tableBody = document.getElementById('records-body');
+            tableBody.innerHTML = '';
+
+            if (records.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" style="text-align: center;">No hay records aún</td>';
+                tableBody.appendChild(row);
+            } else {
+                records.forEach((record, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${record.name}</td>
+                        <td>${record.score}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Función para mostrar toast
+        function showToast(message, color = 'rgba(255, 0, 0, 0.8)') {
+            toast.textContent = message;
+            toast.style.backgroundColor = color;
+            toast.style.opacity = '1';
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+
+        // Función para mostrar SweetAlert
+        function showSweetAlert(title, message) {
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+            sweetAlert.style.display = 'block';
+        }
+
+        // Cerrar SweetAlert
+        alertBtn.addEventListener('click', () => {
+            sweetAlert.style.display = 'none';
+        });
+
+        // Crear indicador de daño
+        function createDamageIndicator(x, y, damage) {
+            const indicator = document.createElement('div');
+            indicator.className = 'damage-indicator';
+            indicator.textContent = `-${damage}`;
+            indicator.style.left = `${x}px`;
+            indicator.style.top = `${y}px`;
+            document.getElementById('game-container').appendChild(indicator);
+
+            setTimeout(() => {
+                indicator.remove();
+            }, 1000);
+        }
+
+        // Inicializar líneas de carretera
+        function initRoadLines() {
+            roadLines.length = 0;
+            for (let y = -roadLineHeight; y < canvas.height; y += roadLineFrequency) {
+                roadLines.push({ y: y });
+            }
+        }
+
+        // Spawn de oponentes
+        function spawnOpponent() {
+            if (opponents.length < 4 && Math.random() < 0.02) {
+                const laneWidth = (canvas.width - 60) / 3;
+                const lane = Math.floor(Math.random() * 3);
+                const x = 30 + lane * laneWidth + laneWidth / 2 - 15;
+                const color = carColors[Math.floor(Math.random() * carColors.length)];
+
+                opponents.push({
+                    x: x,
+                    y: -70,
+                    width: 30,
+                    height: 50,
+                    speed: roadSpeed * 0.8 + Math.random() * roadSpeed * 0.4,
+                    color: color
+                });
+            }
+        }
+
+        // Actualizar estado del juego
+        function update(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (!gameActive) return;
+
+            // Actualizar progreso
+            currentDistance += roadSpeed;
+            progress = (currentDistance / totalDistance) * 100;
+            progressBar.style.height = `${progress}%`;
+
+            // Aumentar velocidad cada cierta distancia
+            if (currentDistance > speedLevel * (totalDistance / 5) && speedLevel < 5) {
+                speedLevel++;
+                roadSpeed = 3 + speedLevel;
+                levelDisplay.textContent = speedLevel;
+                showToast(`¡Nivel de velocidad ${speedLevel}!`, 'rgba(0, 255, 0, 0.8)');
+            }
+
+            // Verificar si completó la carrera
+            if (currentDistance >= totalDistance) {
+                endGame(true);
+                return;
+            }
+
+            // Mover jugador
+            if (player.movingLeft) {
+                player.x -= player.speed;
+                if (player.x < 30) player.x = 30;
+            }
+            if (player.movingRight) {
+                player.x += player.speed;
+                if (player.x > canvas.width - player.width - 30) player.x = canvas.width - player.width - 30;
+            }
+
+            // Desplazar carretera
+            roadOffset += roadSpeed;
+            if (roadOffset >= roadLineFrequency) {
+                roadOffset = 0;
+                roadLines.push({ y: -roadLineHeight });
+            }
+
+            // Efecto de derrape
+            if ((player.movingLeft || player.movingRight) && timestamp - lastSkidTime > 500) {
+                skidSound.play();
+                lastSkidTime = timestamp;
+                createParticles(player.x + 15, player.y + 50, 5);
+            }
+
+            // Cambio climático progresivo
+            if (Math.random() < 0.005) {
+                weatherIntensity = Math.min(1, weatherIntensity + 0.2);
+                createRain();
+            }
+
+            // Generar power-ups
+            if (Math.random() < 0.005 && !isNitroActive) {
+                nitro = 100;
+                document.getElementById('nitro-bar').style.width = '100%';
+                showToast('¡Nitro disponible! Presiona ESPACIO', '#00ffff');
+            }
+
+            // Actualizar líneas de carretera
+            for (let i = roadLines.length - 1; i >= 0; i--) {
+                roadLines[i].y += roadSpeed;
+                if (roadLines[i].y > canvas.height) {
+                    roadLines.splice(i, 1);
+                }
+            }
+
+            // Actualizar oponentes
+            for (let i = opponents.length - 1; i >= 0; i--) {
+                opponents[i].y += opponents[i].speed;
+
+                // Verificar colisión con jugador
+                if (!collidedRecently && checkCollision(player, opponents[i])) {
+                    lives--;
+                    collidedRecently = true;
+                    setTimeout(() => { collidedRecently = false; }, 1000);
+
+                    // Actualizar visualización de vidas
+                    updateLivesDisplay();
+
+                    // Mostrar daño
+                    const damage = Math.floor(Math.random() * 20) + 10;
+                    createDamageIndicator(player.x, player.y, damage);
+                    showToast(`¡Colisión! -${damage} de daño`);
+
+                    // Verificar si perdió
+                    if (lives <= 0) {
+                        endGame(false);
+                        return;
+                    } else {
+                        showSweetAlert("¡Colisión!", `Tu auto ha sufrido daños. Te quedan ${lives} intentos.`);
+                    }
+                }
+
+                // Verificar colisiones entre oponentes
+                for (let j = i - 1; j >= 0; j--) {
+                    if (checkCollision(opponents[i], opponents[j])) {
+                        // Cambiar dirección para separarse
+                        if (opponents[i].x < opponents[j].x) {
+                            opponents[i].x -= 5;
+                            opponents[j].x += 5;
+                        } else {
+                            opponents[i].x += 5;
+                            opponents[j].x -= 5;
+                        }
+
+                        // Mostrar colisión entre oponentes
+                        const midX = (opponents[i].x + opponents[j].x) / 2;
+                        const midY = (opponents[i].y + opponents[j].y) / 2;
+                        createDamageIndicator(midX, midY, "¡Crash!");
+                    }
+                }
+
+                // Mantener oponentes dentro de los límites
+                if (opponents[i].x < 30) opponents[i].x = 30;
+                if (opponents[i].x > canvas.width - opponents[i].width - 30) {
+                    opponents[i].x = canvas.width - opponents[i].width - 30;
+                }
+
+                // Eliminar oponentes fuera de pantalla
+                if (opponents[i].y > canvas.height) {
+                    opponents.splice(i, 1);
+                    score += 10;
+                    scoreElement.textContent = score;
+                }
+            }
+
+            // Generar nuevos oponentes
+            spawnOpponent();
+
+            // Dibujar todo
+            draw();
+
+            requestAnimationFrame(update);
+        }
+
+
+
+        // Actualizar visualización de vidas
+        function updateLivesDisplay() {
+            const hearts = livesDisplay.querySelectorAll('.heart');
+            for (let i = 0; i < hearts.length; i++) {
+                hearts[i].textContent = i < lives ? '❤️' : '💔';
+            }
+        }
+
+        // Verificar colisión entre dos objetos
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                obj1.x + obj1.width > obj2.x &&
+                obj1.y < obj2.y + obj2.height &&
+                obj1.y + obj1.height > obj2.y;
+        }
+
+        // Mejoras visuales en los autos
+        function drawCar(x, y, width, height, color) {
+            // Cuerpo del auto
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+
+            // Ventanas
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(x + 5, y + 5, width - 10, height * 0.4);
+
+            // Luces
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(x + 2, y + height - 10, 5, 5);
+            ctx.fillRect(x + width - 7, y + height - 10, 5, 5);
+
+            // Neumáticos
+            ctx.fillStyle = '#222';
+            ctx.fillRect(x - 5, y + height - 10, 10, 15);
+            ctx.fillRect(x + width - 5, y + height - 10, 10, 15);
+        }
+
+        // Dibujar elementos en el canvas
+        function draw() {
+            // Limpiar canvas
+            ctx.fillStyle = '#444';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar carretera
+            ctx.fillStyle = '#333';
+            ctx.fillRect(30, 0, canvas.width - 60, canvas.height);
+
+            // Dibujar líneas de carril
+            ctx.fillStyle = '#FFF';
+            for (const line of roadLines) {
+                ctx.fillRect(canvas.width / 2 - 5, line.y + roadOffset, 10, roadLineHeight);
+            }
+
+            // Dibujar líneas laterales
+            ctx.fillStyle = '#FF0';
+            ctx.fillRect(30, 0, 5, canvas.height);
+            ctx.fillRect(canvas.width - 35, 0, 5, canvas.height);
+
+            // Dibujar líneas de carril
+            ctx.fillStyle = '#FFF';
+            ctx.setLineDash([20, 20]);
+            ctx.strokeStyle = '#FFF';
+
+            const laneWidth = (canvas.width - 60) / 3;
+            ctx.beginPath();
+            ctx.moveTo(30 + laneWidth, 0);
+            ctx.lineTo(30 + laneWidth, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(30 + laneWidth * 2, 0);
+            ctx.lineTo(30 + laneWidth * 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Dibujar jugador (auto)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Detalles del auto jugador
+            ctx.fillStyle = '#000';
+            ctx.fillRect(player.x + 5, player.y + 10, player.width - 10, 5);
+            ctx.fillRect(player.x + 5, player.y + player.height - 15, player.width - 10, 5);
+
+            // Dibujar oponentes
+            for (const opp of opponents) {
+                ctx.fillStyle = opp.color;
+                ctx.fillRect(opp.x, opp.y, opp.width, opp.height);
+
+                // Detalles de los oponentes
+                ctx.fillStyle = '#000';
+                ctx.fillRect(opp.x + 5, opp.y + 10, opp.width - 10, 5);
+                ctx.fillRect(opp.x + 5, opp.y + opp.height - 15, opp.width - 10, 5);
+            }
+
+            // Dibujar jugador y oponentes con la nueva función
+            drawCar(player.x, player.y, player.width, player.height, player.color);
+            for (const opp of opponents) {
+                drawCar(opp.x, opp.y, opp.width, opp.height, opp.color);
+            }
+        }
+
+        // Finalizar juego
+        function endGame(completed) {
+            gameActive = false;
+            finalScoreElement.textContent = score;
+
+            if (completed) {
+                resultMessage.textContent = "¡Has completado la carrera!";
+                score += 500 + lives * 100;  // Bonus por completar y vidas restantes
+                finalScoreElement.textContent = score;
+            } else {
+                resultMessage.textContent = "¡Te has quedado sin vidas!";
+            }
+
+            saveRecord(playerName, score);
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Reiniciar juego
+        function restartGame() {
+            score = 0;
+            progress = 0;
+            speedLevel = 1;
+            lives = 3;
+            gameActive = true;
+            roadSpeed = 3;
+            roadOffset = 0;
+            collidedRecently = false;
+            currentDistance = 0;
+
+            scoreElement.textContent = score;
+            levelDisplay.textContent = speedLevel;
+            updateLivesDisplay();
+            progressBar.style.height = '0%';
+
+            opponents.length = 0;
+            initRoadLines();
+
+            player.x = canvas.width / 2 - 15;
+            player.y = canvas.height - 100;
+
+            gameOverScreen.style.display = 'none';
+            lastTime = 0;
+
+            requestAnimationFrame(update);
+        }
+
+        // Controles
+        leftBtn.addEventListener('mousedown', () => player.movingLeft = true);
+        leftBtn.addEventListener('mouseup', () => player.movingLeft = false);
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            player.movingLeft = true;
+        });
+        leftBtn.addEventListener('touchend', () => player.movingLeft = false);
+
+        rightBtn.addEventListener('mousedown', () => player.movingRight = true);
+        rightBtn.addEventListener('mouseup', () => player.movingRight = false);
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            player.movingRight = true;
+        });
+        rightBtn.addEventListener('touchend', () => player.movingRight = false);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') player.movingLeft = true;
+            if (e.key === 'ArrowRight') player.movingRight = true;
+            if (e.code === 'Space') {
+                activateNitro();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') player.movingLeft = false;
+            if (e.key === 'ArrowRight') player.movingRight = false;
+        });
+
+        // Botones de interfaz
+        restartBtn.addEventListener('click', restartGame);
+
+        startBtn.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim() || "Jugador";
+            playerNameDisplay.textContent = playerName;
+            startScreen.style.display = 'none';
+            startCountdown(); // En lugar de iniciar update directamente
+            gameActive = true;
+            showToast(`¡Bienvenido ${playerName}!`, 'rgba(0, 255, 0, 0.8)');
+            requestAnimationFrame(update);
+        });
+
+        showLeaderboardBtn.addEventListener('click', () => {
+            loadRecords();
+            leaderboardScreen.style.display = 'flex';
+        });
+
+        recordsBtn.addEventListener('click', () => {
+            loadRecords();
+            leaderboardScreen.style.display = 'flex';
+        });
+
+        closeLeaderboardBtn.addEventListener('click', () => {
+            leaderboardScreen.style.display = 'none';
+        });
+
+        // Iniciar juego
+        function init() {
+            initRoadLines();
+            updateLivesDisplay();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

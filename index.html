@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,20 +13,20 @@
             --dark: #2c3e50;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: #f5f5f5;
             color: #333;
             line-height: 1.6;
         }
-        
+
         header {
             background: linear-gradient(135deg, var(--primary), var(--dark));
             color: white;
@@ -34,25 +35,25 @@
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
         }
-        
+
         h1 {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
             padding: 1rem;
         }
-        
+
         .game-card {
             background: white;
             border-radius: 10px;
@@ -60,34 +61,34 @@
             box-shadow: var(--shadow);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
-        
+
         .game-image {
             width: 100%;
             height: 180px;
             object-fit: cover;
         }
-        
+
         .game-content {
             padding: 1.5rem;
         }
-        
+
         .game-title {
             font-size: 1.4rem;
             margin-bottom: 0.5rem;
             color: var(--primary);
         }
-        
+
         .game-description {
             color: #666;
             margin-bottom: 1rem;
             font-size: 0.95rem;
         }
-        
+
         .game-meta {
             display: flex;
             justify-content: space-between;
@@ -95,7 +96,7 @@
             color: #7f8c8d;
             margin-bottom: 1.5rem;
         }
-        
+
         .play-button {
             display: inline-block;
             background-color: var(--secondary);
@@ -106,11 +107,11 @@
             font-weight: bold;
             transition: background-color 0.3s ease;
         }
-        
+
         .play-button:hover {
             background-color: #c0392b;
         }
-        
+
         footer {
             text-align: center;
             padding: 2rem 0;
@@ -118,7 +119,7 @@
             background-color: var(--dark);
             color: white;
         }
-        
+
         @media (max-width: 768px) {
             .games-grid {
                 grid-template-columns: 1fr;
@@ -126,6 +127,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -133,12 +135,13 @@
             <p>Colección de juegos desarrollados con HTML, CSS y JavaScript</p>
         </div>
     </header>
-    
+
     <main class="container">
         <div class="games-grid">
             <!-- Juego 1: Rally del Chaco -->
             <div class="game-card">
-                <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Rally del Chaco" class="game-image">
+                <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                    alt="Rally del Chaco" class="game-image">
                 <div class="game-content">
                     <h2 class="game-title">Rally del Chaco</h2>
                     <div class="game-meta">
@@ -146,18 +149,41 @@
                         <span>2D</span>
                     </div>
                     <p class="game-description">
-                        Un emocionante juego de rally 2D ambientado en el Chaco paraguayo. 
-                        Esquiva obstáculos, usa turbo y compite contra el reloj en pistas 
-                        llenas de curvas y terrenos difíciles. Demuestra tus habilidades 
+                        Un emocionante juego de rally 2D ambientado en el Chaco paraguayo.
+                        Esquiva obstáculos, usa turbo y compite contra el reloj en pistas
+                        llenas de curvas y terrenos difíciles. Demuestra tus habilidades
                         de conducción en este desafío lleno de adrenalina.
                     </p>
                     <a href="rally_chaco.html" class="play-button">Jugar Ahora</a>
                 </div>
             </div>
-            
-            <!-- Plantilla para nuevos juegos -->
+
+            <!-- Juego Racing FRVR -->
             <div class="game-card">
-                <img src="https://img.freepik.com/vector-gratis/coche-juguete-dibujos-animados-colorido_1308-162249.jpg" alt="Carrera de Autos para Bebés" class="game-image">
+                <img src="https://img.freepik.com/vector-gratis/competencia-carreras-coches-coloridos_1308-128542.jpg"
+                    alt="Carrera FRVR" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Carrera FRVR</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Arcade</span>
+                        <span>Tipo: Carreras</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Vive la adrenalina de las carreras en "Carrera FRVR"! Compite contra 4 oponentes en una intensa
+                        carrera contra reloj, donde cada colisión cuenta. Esquiva a tus rivales, aumenta la velocidad
+                        conforme avanzas y cuida tus 3 vidas mientras intentas llegar primero a la meta. Con gráficos
+                        vibrantes, efectos visuales de daño y un sistema de niveles progresivos, este juego te mantendrá
+                        al borde del asiento. ¡Registra tu nombre, compite por el mejor tiempo y demuestra quién es el
+                        verdadero campeón de la pista!
+                    </p>
+                    <a href="racing.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
+
+            <!-- Carrera de Autos para Bebés -->
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/coche-juguete-dibujos-animados-colorido_1308-162249.jpg"
+                    alt="Carrera de Autos para Bebés" class="game-image">
                 <div class="game-content">
                     <h2 class="game-title">Carrera de Autos para Bebés</h2>
                     <div class="game-meta">
@@ -165,7 +191,12 @@
                         <span>Tipo: Arcade</span>
                     </div>
                     <p class="game-description">
-                        ¡Una aventura llena de color y diversión para los más pequeños! En "Carrera de Autos para Bebés", los niños manejan un alegre auto rojo para recoger brillantes estrellas doradas mientras evitan obstáculos. Con controles simples usando las teclas de flechas, música alegre y sonidos divertidos, este juego está diseñado para estimular la coordinación y la imaginación de los bebés. Los gráficos vibrantes y las animaciones suaves crean un entorno amigable que encanta a los pequeños exploradores. ¡Perfecto para introducir a los niños al mundo de los videojuegos de forma segura y entretenida!
+                        ¡Una aventura llena de color y diversión para los más pequeños! En "Carrera de Autos para
+                        Bebés", los niños manejan un alegre auto rojo para recoger brillantes estrellas doradas mientras
+                        evitan obstáculos. Con controles simples usando las teclas de flechas, música alegre y sonidos
+                        divertidos, este juego está diseñado para estimular la coordinación y la imaginación de los
+                        bebés. Los gráficos vibrantes y las animaciones suaves crean un entorno amigable que encanta a
+                        los pequeños exploradores.
                     </p>
                     <a href="carrera_bebe.html" class="play-button">Jugar Ahora</a>
                 </div>
@@ -173,7 +204,8 @@
 
             <!-- Aventura Bebe -->
             <div class="game-card">
-                <img src="https://img.freepik.com/vector-gratis/estrella-dibujos-animados-brillante_1308-134586.jpg" alt="Aventura Estelar para Bebés" class="game-image">
+                <img src="https://img.freepik.com/vector-gratis/estrella-dibujos-animados-brillante_1308-134586.jpg"
+                    alt="Aventura Estelar para Bebés" class="game-image">
                 <div class="game-content">
                     <h2 class="game-title">Aventura Estelar para Bebés</h2>
                     <div class="game-meta">
@@ -181,14 +213,19 @@
                         <span>Tipo: Casual</span>
                     </div>
                     <p class="game-description">
-                        ¡Lleva a tu pequeño a una carrera mágica bajo el cielo estrellado! En este juego, los bebés conducen un auto rojo brillante para atrapar estrellas doradas que iluminan la pantalla, mientras esquivan obstáculos con facilidad. Diseñado especialmente para niños pequeños, ofrece controles intuitivos con las flechas del teclado, sonidos suaves que celebran cada logro y una música relajante que mantiene la calma. Los colores vivos y las formas grandes ayudan a desarrollar la atención y la motricidad fina, haciendo de esta aventura una experiencia divertida y educativa para los más pequeños.
+                        ¡Lleva a tu pequeño a una carrera mágica bajo el cielo estrellado! En este juego, los bebés
+                        conducen un auto rojo brillante para atrapar estrellas doradas que iluminan la pantalla,
+                        mientras esquivan obstáculos con facilidad. Diseñado especialmente para niños pequeños, ofrece
+                        controles intuitivos con las flechas del teclado, sonidos suaves que celebran cada logro y una
+                        música relajante que mantiene la calma.
                     </p>
                     <a href="carrera_grok.html" class="play-button">Jugar Ahora</a>
                 </div>
             </div>
             <!-- Cazador de Notas Musicales -->
             <div class="game-card">
-                <img src="https://img.freepik.com/vector-gratis/nota-musical-colorida_1308-134587.jpg" alt="Cazador de Notas Musicales" class="game-image">
+                <img src="https://img.freepik.com/vector-gratis/nota-musical-colorida_1308-134587.jpg"
+                    alt="Cazador de Notas Musicales" class="game-image">
                 <div class="game-content">
                     <h2 class="game-title">Cazador de Notas Musicales</h2>
                     <div class="game-meta">
@@ -196,95 +233,161 @@
                         <span>Tipo: Musical</span>
                     </div>
                     <p class="game-description">
-                        ¡Guía a tu pequeño en una aventura melódica llena de ritmo y color! En "Cazador de Notas Musicales", los bebés manejan un auto azul brillante para atrapar notas doradas de la escala musical (Do, Re, Mi...), aprendiendo sus sonidos mientras evitan notas incorrectas. Con controles sencillos usando solo las flechas izquierda y derecha, este juego ofrece sonidos alegres que celebran cada nota correcta y una música suave que crea un ambiente relajado. Los colores vibrantes y las formas grandes estimulan la atención, la coordinación y el amor por la música, haciendo de esta experiencia un viaje educativo y divertido para los más pequeños.
+                        ¡Guía a tu pequeño en una aventura melódica llena de ritmo y color! En "Cazador de Notas
+                        Musicales", los bebés manejan un auto azul brillante para atrapar notas doradas de la escala
+                        musical (Do, Re, Mi...), aprendiendo sus sonidos mientras evitan notas incorrectas. Con
+                        controles sencillos, este juego combina diversión y educación musical para estimular el
+                        desarrollo auditivo de los más pequeños.
                     </p>
                     <a href="racing_music.html" class="play-button">Jugar Ahora</a>
                 </div>
             </div>
 
             <!-- Tilt Pocket -->
-<div class="game-card">
-    <img src="https://img.freepik.com/vector-gratis/mesa-billar-realista_1284-41833.jpg" alt="Tilt Pocket" class="game-image">
-    <div class="game-content">
-        <h2 class="game-title">Tilt Pocket</h2>
-        <div class="game-meta">
-            <span>Categoría: Arcade</span>
-            <span>Tipo: Habilidad</span>
-        </div>
-        <p class="game-description">
-            ¡Desafía tu destreza con "Tilt Pocket"! Inclina tu teléfono para guiar una bola brillante a través de una mesa de billar llena de agujeros generados aleatoriamente. Tu misión es embocar la bola en el agujero dorado, ¡pero cuidado con los trampas negras! Con una física suave y controles intuitivos basados en el movimiento, cada nivel te reta a ser más rápido y preciso. Los gráficos simples pero vibrantes y la emoción de cada emboque hacen de este juego una experiencia adictiva y divertida para todas las edades.
-        </p>
-        <a href="ball.html" class="play-button">Jugar Ahora</a>
-    </div>
-</div>
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/mesa-billar-realista_1284-41833.jpg" alt="Tilt Pocket"
+                    class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Tilt Pocket</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Arcade</span>
+                        <span>Tipo: Habilidad</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Desafía tu destreza con "Tilt Pocket"! Inclina tu teléfono para guiar una bola brillante a
+                        través de una mesa de billar llena de agujeros generados aleatoriamente. Tu misión es embocar la
+                        bola en el agujero dorado, ¡pero cuidado con las trampas negras! Con física realista y controles
+                        intuitivos de movimiento, cada nivel te reta a ser más preciso y estratégico.
+                    </p>
+                    <a href="ball.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
             <!-- Carrera de Colores -->
-<div class="game-card">
-    <img src="https://img.freepik.com/vector-gratis/coche-dibujos-animados-colorido_1308-134589.jpg" alt="Carrera de Colores" class="game-image">
-    <div class="game-content">
-        <h2 class="game-title">Carrera de Colores</h2>
-        <div class="game-meta">
-            <span>Categoría: Infantil</span>
-            <span>Tipo: Arcade</span>
-        </div>
-        <p class="game-description">
-            ¡Lleva a tu pequeño a una aventura llena de color y diversión con "Carrera de Colores"! Inclina el teléfono para conducir un auto azul con ojitos por una pista recta y vibrante, recogiendo monedas doradas que brillan en el camino. Diseñado para bebés, este juego ofrece gráficos grandes, colores alegres y movimientos suaves que estimulan la coordinación y la atención. Sin complicaciones ni castigos, es perfecto para que los más pequeños exploren y se diviertan mientras aprenden a controlar el auto.
-        </p>
-        <a href="carrera_colores.html" class="play-button">Jugar Ahora</a>
-    </div>
-</div>
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/coche-dibujos-animados-colorido_1308-134589.jpg"
+                    alt="Carrera de Colores" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Carrera de Colores</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Infantil</span>
+                        <span>Tipo: Arcade</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Lleva a tu pequeño a una aventura llena de color y diversión con "Carrera de Colores"! Inclina
+                        el teléfono para conducir un auto azul con ojitos por una pista recta y vibrante, recogiendo
+                        monedas doradas que brillan en el camino. Diseñado específicamente para desarrollar habilidades
+                        motoras en los más pequeños mediante controles sencillos y visuales atractivos.
+                    </p>
+                    <a href="carrera_colores.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
 
             <!-- Aventura de Formas -->
-<div class="game-card">
-    <img src="https://img.freepik.com/vector-gratis/formas-geometricas-dibujos-animados_1308-134590.jpg" alt="Aventura de Formas" class="game-image">
-    <div class="game-content">
-        <h2 class="game-title">Aventura de Formas</h2>
-        <div class="game-meta">
-            <span>Categoría: Educativo</span>
-            <span>Tipo: Infantil</span>
-        </div>
-        <p class="game-description">
-            ¡Descubre el mundo de las formas con "Aventura de Formas"! Inclina el teléfono para guiar una estrella sonriente y capturar círculos, cuadrados, triángulos y más, siguiendo la forma indicada. Diseñado para bebés, este juego ofrece colores vivos, formas grandes y sonidos alegres que celebran cada acierto, ayudando a los pequeños a aprender mientras se divierten. Sin complicaciones, es perfecto para desarrollar el reconocimiento de formas y la coordinación en un ambiente lleno de magia.
-        </p>
-        <a href="aventura_formas.html" class="play-button">Jugar Ahora</a>
-    </div>
-</div>
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/formas-geometricas-dibujos-animados_1308-134590.jpg"
+                    alt="Aventura de Formas" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Aventura de Formas</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Educativo</span>
+                        <span>Tipo: Infantil</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Descubre el mundo de las formas con "Aventura de Formas"! Inclina el teléfono para guiar una
+                        estrella sonriente y capturar círculos, cuadrados, triángulos y más, siguiendo la forma
+                        indicada. Este juego educativo combina diversión y aprendizaje con colores vivos y sonidos
+                        alegres que refuerzan el reconocimiento de patrones y formas geométricas.
+                    </p>
+                    <a href="aventura_formas.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
             <!-- Batalla Estelar -->
-<div class="game-card">
-    <img src="https://img.freepik.com/vector-gratis/nave-espacial-dibujos-animados_1308-134591.jpg" alt="Batalla Estelar" class="game-image">
-    <div class="game-content">
-        <h2 class="game-title">Batalla Estelar</h2>
-        <div class="game-meta">
-            <span>Categoría: Educativo</span>
-            <span>Tipo: Infantil</span>
-        </div>
-        <p class="game-description">
-            ¡Surca la galaxia con "Batalla Estelar"! Inclina el teléfono para pilotar una nave espacial con ojitos y dispara a naves enemigas del color indicado, como rojo o azul, con un alegre "pew pew". Inspirado en Star Wars, este juego para niños combina diversión y aprendizaje, ayudando a reconocer colores en un espacio lleno de estrellas. Con gráficos grandes y sin complicaciones, es perfecto para que los pequeños desarrollen coordinación y disfruten una aventura cósmica.
-        </p>
-        <a href="batalla_estelar.html" class="play-button">Jugar Ahora</a>
-    </div>
-</div>
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/nave-espacial-dibujos-animados_1308-134591.jpg"
+                    alt="Batalla Estelar" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Batalla Estelar</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Educativo</span>
+                        <span>Tipo: Infantil</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Surca la galaxia con "Batalla Estelar"! Inclina el teléfono para pilotar una nave espacial con
+                        ojitos y dispara a naves enemigas del color indicado, como rojo o azul, con un alegre "pew pew".
+                        Inspirado en Star Wars, este juego combina acción espacial y aprendizaje de colores en un
+                        universo visualmente impactante perfecto para pequeños exploradores.
+                    </p>
+                    <a href="batalla_estelar.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
 
-                        <!-- Carrera Dado -->
-<div class="game-card">
-    <img src="https://img.freepik.com/vector-gratis/nave-espacial-dibujos-animados_1308-134591.jpg" alt="Batalla Estelar" class="game-image">
-    <div class="game-content">
-        <h2 class="game-title">Carrera Dado</h2>
-        <div class="game-meta">
-            <span>Categoría: Educativo</span>
-            <span>Tipo: Infantil</span>
+            <!-- Carrera Dado -->
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/dados-casino-realistas-numeros-negros_1284-13873.jpg"
+                    alt="Carrera Dado" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Carrera Dado</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Educativo</span>
+                        <span>Tipo: Infantil</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Lanza los dados y avanza en "Carrera Dado"! Un emocionante juego que combina suerte y
+                        estrategia donde lanzas un dado virtual para avanzar en una pista colorida llena de sorpresas.
+                        Perfecto para aprender números y contar de forma divertida, este juego ofrece una experiencia
+                        educativa envuelta en la emoción de una carrera donde cada tirada puede cambiar tu destino.
+                    </p>
+                    <a href="dado_contrareloj_multiplayer.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
+
+            <!-- Juego de Taxista -->
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/ilustracion-taxi-amarillo-ciudad_1284-52412.jpg"
+                    alt="Aventura de Taxista" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Aventura de Taxista</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Aventura</span>
+                        <span>Tipo: Infantil</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Conduce por la ciudad en "Aventura de Taxista"! En este divertido juego, te conviertes en un
+                        taxista que debe sortear obstáculos como tráfico, charcos y desvíos para llevar a tus pasajeros
+                        a tiempo. Cada decisión cuenta en esta pista llena de desafíos y sorpresas. Ideal para niños que
+                        disfrutan de aventuras dinámicas mientras aprenden a tomar decisiones rápidas.
+                    </p>
+                    <a href="taxi.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
+
+            <!-- Mini Racing -->
+            <div class="game-card">
+                <img src="https://img.freepik.com/vector-gratis/coche-juguete-dibujos-animados-bebe_1308-109789.jpg"
+                    alt="Mini Racing" class="game-image">
+                <div class="game-content">
+                    <h2 class="game-title">Mini Racing</h2>
+                    <div class="game-meta">
+                        <span>Categoría: Carreras</span>
+                        <span>Tipo: Infantil</span>
+                    </div>
+                    <p class="game-description">
+                        ¡Pisa el acelerador en "Mini Racing"! Una adorable competición diseñada para bebés y niños
+                        pequeños, donde pequeños autos de juguete corren en una pista llena de colores y sorpresas. Este
+                        juego fomenta la coordinación y la diversión con controles simples y animaciones encantadoras,
+                        perfecto para los más pequeños que sueñan con ser pilotos.
+                    </p>
+                    <a href="racing.html" class="play-button">Jugar Ahora</a>
+                </div>
+            </div>
         </div>
-        <p class="game-description">
-            Carrera Dados
-        </p>
-        <a href="carrera_dado.html" class="play-button">Jugar Ahora</a>
-    </div>
-</div>
     </main>
-    
+
     <footer>
         <div class="container">
             <p>&copy; 2023 Mis Juegos HTML5. Todos los derechos reservados.</p>
         </div>
     </footer>
 </body>
+
 </html>

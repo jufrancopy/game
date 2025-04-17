@@ -78,6 +78,15 @@
             margin-bottom: 10px;
         }
 
+        .fuel-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
         .track-selector {
             display: flex;
             align-items: center;
@@ -298,6 +307,28 @@
         .cell.event {
             background: #673ab7;
             color: white;
+        }
+
+        .splash-effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.7), transparent);
+            border-radius: 50%;
+            animation: splash 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes splash {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
         }
 
         .car {
@@ -783,6 +814,11 @@
             .dice-face {
                 font-size: 40px;
             }
+
+            .fuel-display {
+                font-size: 10px;
+            }
+
         }
     </style>
 </head>
@@ -826,6 +862,11 @@
                 <span id="player2Name">Jugador 2</span>: <span id="score2">0</span> pts
                 <div class="status-effects" id="status2"></div>
             </div>
+        </div>
+
+        <div class="fuel-display">
+            <span>Combustible J1: <span id="fuel1">100%</span></span>
+            <span>Combustible J2: <span id="fuel2">100%</span></span>
         </div>
 
         <div class="track-container">
@@ -941,19 +982,21 @@
         let traps = [];
         let carCondition = [100, 100];
         let repairActive = [false, false];
+        let fuel = [100, 100]; // Combustible inicial (100% para cada jugador)
+
 
         // Sonidos
-        const moveSound = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
+        const moveSound = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
         const winSound = new Audio('https://www.soundjay.com/misc/sounds/crowd-cheer-01.mp3');
         const penaltySound = new Audio('https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3');
         const diceSound = new Audio('https://www.soundjay.com/misc/sounds/dice-roll-01.mp3');
-        const coinSound = new Audio('https://www.soundjay.com/misc/sounds/coins-01.mp3');
-        const advanceSound = new Audio('https://www.soundjay.com/misc/sounds/coin-drop-1.mp3');
-        const reverseSound = new Audio('https://www.soundjay.com/misc/sounds/error-4.mp3');
+        const coinSound = new Audio('https://www.soundjay.com/misc/sounds/coins-to-table-2.mp3');
+        const advanceSound = new Audio('https://www.soundjay.com/transportation/sounds/car-locked-honk-1.mp3');
+        const reverseSound = new Audio('https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3');
         const boostSound = new Audio('https://www.soundjay.com/mechanical/sounds/car-driving-02.mp3');
         const shieldSound = new Audio('https://www.soundjay.com/buttons/sounds/button-30.mp3');
         const repairSound = new Audio('https://www.soundjay.com/mechanical/sounds/car-ignition-1.mp3');
-        const explosionSound = new Audio('https://www.soundjay.com/mechanical/sounds/robot-06.mp3');
+        const explosionSound = new Audio('https://www.soundjay.com/mechanical/sounds/explosion-03.mp3');
         const rainSound = new Audio('https://www.soundjay.com/nature/sounds/rain-07.mp3');
         rainSound.loop = true;
 
@@ -973,6 +1016,11 @@
             { question: '¿Qué estilo musical creó José Asunción Flores?', options: ['Guarania', 'Chamamé', 'Ranchera', 'Vallenato'], correct: 'Guarania' },
             { question: '¿Qué grupo paraguayo es famoso por interpretar canciones como "Recuerdos de Ypacaraí"?', options: ['Los Paraguayos', 'Los Kjarkas', 'Inti-Illimani', 'Los Calchakis'], correct: 'Los Paraguayos' }
         ];
+
+        //combustible
+        function updateFuelDisplay(player) {
+            document.getElementById(`fuel${player}`).textContent = `${Math.round(fuel[player - 1])}%`;
+        }
 
         // Tutorial
         function showTutorial() {
@@ -1171,7 +1219,21 @@
                 { type: 'animal_rescue', icon: '🐶' },
                 { type: 'shop', icon: '🛒' },
                 { type: 'bonus', icon: '⭐' },
-                { type: 'event', icon: '🎉' }
+                { type: 'event', icon: '🎉' },
+                {
+                    type: 'fuel',
+                    icon: '⛽', // Añadir ícono de bomba de gasolina
+                    effect: 'Recarga 20% de combustible',
+                    action: (player) => {
+                        fuel[player - 1] = Math.min(100, fuel[player - 1] + 20);
+                        updateFuelDisplay(player);
+                        Toastify({
+                            text: `${playerNames[player - 1]} recargó 20% de combustible!`,
+                            duration: 3000,
+                            style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                        }).showToast();
+                    }
+                }
             ];
 
             const availableIndices = Array.from({ length: 35 }, (_, i) => i + 1);
@@ -1316,7 +1378,7 @@
                 if (rotationCount >= maxRotations) {
                     clearInterval(rotationInterval);
                     diceFace.style.transform = 'rotate(0deg)'; // Volver a la posición inicial
-                    coinSound.play();
+                    // coinSound.play();
                     Toastify({
                         text: `Sacaste un ${roll}`,
                         duration: 2000,
@@ -1330,6 +1392,7 @@
                 }
             }, 200); // Cada 200ms un nuevo giro completo
         }
+
         // Sacudida en móvil
         function setupShakeDetection() {
             if (window.DeviceMotionEvent) {
@@ -1369,25 +1432,54 @@
             totalSteps[player - 1] += steps;
 
             function moveStep(step) {
-                if (step <= 0) {
+                if (step <= 0 || fuel[player - 1] <= 0) {
+                    if (fuel[player - 1] <= 0) {
+                        Toastify({
+                            text: `${playerNames[player - 1]} se quedó sin combustible! Pierde el turno.`,
+                            duration: 3000,
+                            style: { background: '#ff4444', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                        }).showToast();
+                        switchPlayer();
+                        return;
+                    }
                     positions[player - 1] = currentPos;
                     const cell = cells.find(c => c.dataset.index == currentPos);
                     checkCell(player, currentPos, cell);
                     return;
                 }
+                fuel[player - 1] = Math.max(0, fuel[player - 1] - 2); // 2% por casilla
+                updateFuelDisplay(player);
+
+                // Actualizar posición
                 currentPos = (currentPos + 1) % totalCells;
                 if (currentPos === 0) {
                     laps[player - 1]++;
                     currentLapDisplay.textContent = laps[player - 1];
                 }
+
+                // Mover auto en el tablero
                 const { x, y } = getCellCoordinates(currentPos);
                 const car = document.querySelector(`.car${player}`);
                 const rotation = getRotation(currentPos);
                 car.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+
+                // Mover marcador en el minimapa
                 const { x: miniX, y: miniY } = getMiniMapCoordinates(currentPos);
                 const miniCar = document.querySelectorAll('.mini-car')[player - 1];
                 miniCar.style.transform = `translate(${miniX}px, ${miniY}px)`;
+
+                // Reproducir sonidos
                 advanceSound.play();
+                try {
+                    moveSound.currentTime = 0;
+                    moveSound.play().catch(e => {
+                        console.warn('No se pudo reproducir el sonido del auto:', e.message);
+                    });
+                } catch (e) {
+                    console.warn('Error al intentar reproducir el sonido del auto:', e.message);
+                }
+
+                // Actualizar progreso y continuar
                 updateProgress(player);
                 setTimeout(() => moveStep(step - 1), 1000);
             }
@@ -1410,8 +1502,31 @@
             const { x: miniX, y: miniY } = getMiniMapCoordinates(newPos);
             const miniCar = document.querySelectorAll('.mini-car')[player - 1];
             miniCar.style.transform = `translate(${miniX}px, ${miniY}px)`;
-            if (additionalSteps < 0) reverseSound.play();
-            else moveSound.play();
+
+            // Reproducir sonidos según el tipo de movimiento
+            if (additionalSteps < 0) {
+                reverseSound.play().catch(e => {
+                    console.warn('No se pudo reproducir el sonido de retroceso:', e.message);
+                });
+                // Detener el sonido después de completar el movimiento
+                setTimeout(() => {
+                    reverseSound.pause();
+                    reverseSound.currentTime = 0; // Reiniciar para el próximo uso
+                }, 500); // Ajustar según la duración del movimiento
+            } else if (additionalSteps > 0) {
+                moveSound.play();
+                try {
+                    moveSound.currentTime = 0;
+                    moveSound.play().catch(e => {
+                        console.warn('No se pudo reproducir el sonido del auto:', e.message);
+                    });
+                } catch (e) {
+                    console.warn('Error al intentar reproducir el sonido del auto:', e.message);
+                }
+            } else {
+                moveSound.play();
+            }
+
             updateProgress(player);
         }
 
@@ -1419,6 +1534,23 @@
         function updateProgress(player) {
             const progressPercent = Math.min((totalSteps[player - 1] / (totalCells * totalLaps)) * 100, 100);
             progress.style.width = `${progressPercent}%`;
+        }
+
+        function checkCell(player, pos, cell) {
+            const trap = traps.find(t => t.type === cell.dataset.type);
+            if (trap) {
+                trap.action(player);
+                if (trap.type === 'water') {
+                    createSplashEffect(cell);
+                }
+            }
+        }
+
+        function createSplashEffect(cell) {
+            const splash = document.createElement('div');
+            splash.className = 'splash-effect';
+            cell.appendChild(splash);
+            setTimeout(() => splash.remove(), 1000); // Remover después de 1s
         }
 
         // Actualizar efectos de estado

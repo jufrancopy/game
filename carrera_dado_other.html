@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Carreras Paraguay - Contrareloj</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">
+    <style>
+        :root {
+            --primary-color: #2980b9;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-light: #f9f9f9;
+            --text-color: #2c3e50;
+            --shadow-normal: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-large: 0 8px 20px rgba(0, 0, 0, 0.2);
+            --radius-small: 6px;
+            --radius-normal: 8px;
+            --track-cell-size-desktop: 50px;
+            --track-cell-size-mobile: 32px;
+            --font-size-small: 12px;
+            --font-size-normal: 16px;
+            --font-size-large: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: linear-gradient(to bottom, #87CEEB, #2980b9);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .game-title {
+            font-size: 24px;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-normal);
+            padding: 15px;
+            box-shadow: var(--shadow-large);
+            max-width: 95%;
+            width: 550px;
+        }
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .fuel-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .track-selector {
+            display: flex;
+            align-items: center;
+            font-size: var(--font-size-small);
+        }
+
+        .weather-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: var(--font-size-small);
+        }
+
+        .weather-icon {
+            font-size: var(--font-size-normal);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .weather-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .weather-icon.active {
+            color: var(--accent-color);
+            text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+        }
+
+        .track-selector select {
+            padding: 5px;
+            font-size: var(--font-size-small);
+            border-radius: var(--radius-small);
+            background: white;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+            margin-left: 5px;
+        }
+
+        .track-selector select:hover {
+            background: #f0f0f0;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 10px;
+            background: #fff;
+            color: var(--text-color);
+            border-radius: var(--radius-normal);
+            margin-bottom: 10px;
+            font-size: var(--font-size-small);
+            box-shadow: var(--shadow-normal);
+        }
+
+        .player-score {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .car-icon {
+            font-size: var(--font-size-small);
+        }
+
+        .turn-indicator {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: var(--radius-small);
+            font-weight: bold;
+            box-shadow: var(--shadow-normal);
+        }
+
+        .track-container {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .track {
+            display: grid;
+            grid-template-columns: repeat(10, var(--track-cell-size-desktop));
+            grid-template-rows: repeat(10, var(--track-cell-size-desktop));
+            gap: 2px;
+            background: #333;
+            padding: 8px;
+            border-radius: var(--radius-normal);
+            position: relative;
+            width: 520px;
+            height: 520px;
+            transition: transform 0.3s ease;
+        }
+
+        .cell {
+            width: var(--track-cell-size-desktop);
+            height: var(--track-cell-size-desktop);
+            background: var(--background-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            position: relative;
+            font-size: 24px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+        }
+
+        .cell .number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+            background-color: #333;
+            color: white;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .cell.start {
+            background: #4caf50;
+            color: white;
+        }
+
+        .cell.mud {
+            background: #a67c52;
+            color: white;
+        }
+
+        .cell.water {
+            background: #add8e6;
+            color: #2c3e50;
+        }
+
+        .cell.oil {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .cell.fire {
+            background: #ff6347;
+            color: white;
+        }
+
+        .cell.police {
+            background: #3498db;
+            color: white;
+        }
+
+        .cell.animal_bad {
+            background: #ffd700;
+            color: #2c3e50;
+        }
+
+        .cell.animal_good {
+            background: #98fb98;
+            color: #2c3e50;
+        }
+
+        .cell.ramp {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .cell.turbo {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .cell.detour {
+            background: #bdc3c7;
+            color: #2c3e50;
+        }
+
+        .cell.animal_rescue {
+            background: #f1c40f;
+            color: #2c3e50;
+        }
+
+        .cell.tire-change {
+            background: #616161;
+            color: white;
+        }
+
+        .cell.history-quiz {
+            background: #3f51b5;
+            color: white;
+        }
+
+        .cell.music-quiz {
+            background: #9c27b0;
+            color: white;
+        }
+
+        .cell.shop {
+            background: #ff9800;
+            color: white;
+        }
+
+        .cell.bonus {
+            background: #00bcd4;
+            color: white;
+        }
+
+        .cell.event {
+            background: #673ab7;
+            color: white;
+        }
+
+        .splash-effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.7), transparent);
+            border-radius: 50%;
+            animation: splash 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes splash {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .car {
+            position: absolute;
+            font-size: 18px;
+            transition: all 0.5s ease;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+        }
+
+        .dice-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 20;
+        }
+
+        .dice {
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .dice-face {
+            font-size: 50px;
+            display: inline-block;
+            transition: transform 0.1s ease;
+            /* Transición rápida para la rotación */
+        }
+
+        .dice.rolling {
+            animation: none;
+            /* Desactivar pulso durante la rotación */
+            transition: transform 0.1s ease;
+            /* Asegurar transición suave para la rotación */
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .dice:hover {
+            transform: scale(1.1);
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            border-radius: var(--radius-small);
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: var(--font-size-small);
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-normal);
+        }
+
+        .control-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .boost-btn {
+            background: var(--accent-color);
+        }
+
+        .boost-btn:hover {
+            background: #c0392b;
+        }
+
+        .help-btn {
+            background: #27ae60;
+        }
+
+        .help-btn:hover {
+            background: #2ecc71;
+        }
+
+        .inventory-btn {
+            background: #f39c12;
+        }
+
+        .inventory-btn:hover {
+            background: #f1c40f;
+        }
+
+        .power-ups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .power-up {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: var(--shadow-normal);
+            transition: all 0.3s;
+            border: 2px solid #ddd;
+        }
+
+        .power-up:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .power-up.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .track-night .track {
+            background: #1a1a1a;
+        }
+
+        .track-night .cell {
+            background: #444;
+            border-color: #666;
+        }
+
+        .track-night .cell.start {
+            background: #2e7d32;
+        }
+
+        .track-wet .track {
+            background: #0288d1;
+        }
+
+        .track-wet .cell {
+            background: #4fc3f7;
+            border-color: #0288d1;
+        }
+
+        .track-wet .cell.start {
+            background: #4caf50;
+        }
+
+        .track-rally .track {
+            background: #8d6e63;
+        }
+
+        .track-rally .cell {
+            background: #d7ccc8;
+            border-color: #6d4c41;
+        }
+
+        .track-rally .cell.start {
+            background: #4caf50;
+        }
+
+        .track-snowy {
+            background: linear-gradient(to bottom, #e0f7fa, #b3e5fc);
+        }
+
+        .track-snowy .track {
+            background: #b3e5fc;
+        }
+
+        .track-snowy .cell {
+            background: #e1f5fe;
+            border-color: #81d4fa;
+        }
+
+        .weather-effects {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 5;
+            border-radius: var(--radius-normal);
+        }
+
+        .rain {
+            position: absolute;
+            width: 2px;
+            background: rgba(174, 194, 224, 0.5);
+            border-radius: 5px;
+        }
+
+        .snow {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px white;
+        }
+
+        .mini-map {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius-small);
+            box-shadow: var(--shadow-normal);
+            overflow: hidden;
+            z-index: 5;
+            border: 1px solid #ddd;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 1px;
+            padding: 2px;
+        }
+
+        .mini-cell {
+            background: #eee;
+            border-radius: 1px;
+        }
+
+        .mini-cell.path {
+            background: #aaa;
+        }
+
+        .mini-cell.start {
+            background: #4caf50;
+        }
+
+        .mini-car {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .lap-counter {
+            font-size: var(--font-size-small);
+            margin-top: 5px;
+            color: var(--text-color);
+        }
+
+        .hint-text {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .status-effects {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+        }
+
+        .status-effect {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 5px;
+            border-radius: 12px;
+            font-size: 10px;
+            background: #f0f0f0;
+        }
+
+        .status-effect.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+
+        .status-effect.negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+
+        .boosted {
+            animation: boosted 1s infinite alternate;
+        }
+
+        @keyframes boosted {
+            0% {
+                filter: drop-shadow(0 0 3px rgba(255, 0, 0, 0.5));
+            }
+
+            100% {
+                filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8));
+            }
+        }
+
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .tutorial-content {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-normal);
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .tutorial-step {
+            margin-bottom: 15px;
+        }
+
+        /* Nuevos estilos para el modo contrareloj */
+        .time-trial-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .time-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .best-time {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .time-trial-btn {
+            padding: 8px 15px;
+            border-radius: var(--radius-small);
+            background: #9b59b6;
+            color: white;
+            border: none;
+            font-size: var(--font-size-small);
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-normal);
+            margin-top: 5px;
+        }
+
+        .time-trial-btn:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+        }
+
+        .time-trial-active {
+            background: #e74c3c;
+        }
+
+        .time-trial-active:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --track-cell-size-mobile: 32px;
+            }
+
+            body {
+                padding: 5px;
+            }
+
+            .game-title {
+                font-size: 18px;
+                margin: 5px 0;
+            }
+
+            .game-container {
+                padding: 10px;
+                border-radius: 6px;
+            }
+
+            .track-container {
+                height: 340px;
+            }
+
+            .track {
+                grid-template-columns: repeat(10, var(--track-cell-size-mobile));
+                grid-template-rows: repeat(10, var(--track-cell-size-mobile));
+                width: 340px;
+                height: 340px;
+                padding: 5px;
+            }
+
+            .cell {
+                width: var(--track-cell-size-mobile);
+                height: var(--track-cell-size-mobile);
+                font-size: 16px;
+                border-radius: 4px;
+            }
+
+            .cell .number {
+                font-size: 8px;
+                width: 12px;
+                height: 12px;
+            }
+
+            .car {
+                font-size: 14px;
+            }
+
+            .scoreboard {
+                font-size: 10px;
+                padding: 5px;
+                margin-bottom: 5px;
+            }
+
+            .track-selector,
+            .weather-toggle {
+                font-size: 10px;
+            }
+
+            .track-selector select {
+                font-size: 10px;
+                padding: 2px;
+            }
+
+            .control-btn {
+                padding: 5px 10px;
+                font-size: 10px;
+            }
+
+            .power-up {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .mini-map {
+                width: 80px;
+                height: 80px;
+                bottom: 5px;
+                right: 5px;
+            }
+
+            .hint-text {
+                font-size: 8px;
+            }
+
+            .status-effect {
+                font-size: 8px;
+                padding: 2px 4px;
+            }
+
+            .top-controls {
+                flex-direction: column;
+                gap: 5px;
+                align-items: center;
+            }
+
+            .weather-toggle {
+                order: -1;
+                margin-bottom: 5px;
+            }
+
+            .dice {
+                width: 60px;
+                height: 60px;
+                padding: 5px;
+            }
+
+            .dice-face {
+                font-size: 40px;
+            }
+
+            .fuel-display {
+                font-size: 10px;
+            }
+
+            /* Ajustes para modo contrareloj en móviles */
+            .time-display {
+                font-size: 18px;
+            }
+
+            .best-time {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1 class="game-title">Super Carreras Paraguay - Contrareloj</h1>
+    </div>
+
+    <div class="game-container">
+        <div class="top-controls">
+            <div class="track-selector">
+                <label for="trackType">Pista: </label>
+                <select id="trackType">
+                    <option value="default">Clásica</option>
+                    <option value="night">Nocturna</option>
+                    <option value="wet">Mojada</option>
+                    <option value="rally">Rally</option>
+                    <option value="snowy">Nevada</option>
+                </select>
+            </div>
+            <div class="weather-toggle">
+                <span>Clima: </span>
+                <span id="weatherNormal" class="weather-icon active" title="Normal">☀️</span>
+                <span id="weatherRain" class="weather-icon" title="Lluvia">🌧️</span>
+                <span id="weatherSnow" class="weather-icon" title="Nieve">❄️</span>
+            </div>
+        </div>
+
+        <!-- Contenedor para el modo contrareloj -->
+        <div class="time-trial-container">
+            <div class="time-display" id="timeDisplay">00:00.00</div>
+            <div class="best-time" id="bestTime">Mejor tiempo: --:--.--</div>
+            <button class="time-trial-btn" id="timeTrialBtn">Iniciar Contrareloj</button>
+        </div>
+
+        <div class="scoreboard">
+            <div class="player-score">
+                <i class="car-icon fas fa-car-side" id="player1Color"></i>
+                <span id="player1Name">Jugador</span>
+                <div class="status-effects" id="status1"></div>
+            </div>
+            <div class="turn-indicator">
+                <span id="turn">Preparado</span>
+            </div>
+        </div>
+
+        <div class="fuel-display">
+            <span>Combustible: <span id="fuel1">100%</span></span>
+        </div>
+
+        <div class="track-container">
+            <div class="track" id="track">
+                <div class="weather-effects" id="weatherEffects"></div>
+                <div class="dice-container">
+                    <div class="dice" id="dice"><span class="dice-face">🎲</span></div>
+                </div>
+            </div>
+            <div class="mini-map" id="miniMap"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="lap-counter">Vuelta: <span id="currentLap">1</span> / <span id="totalLaps">3</span></div>
+
+        <div class="power-ups" id="powerUps">
+            <div class="power-up" data-type="shield" title="Escudo">🛡️</div>
+            <div class="power-up" data-type="boost" title="Nitro">🚀</div>
+            <div class="power-up" data-type="repair" title="Reparar">🔧</div>
+            <div class="power-up" data-type="teleport" title="Teletransporte">⚡</div>
+        </div>
+
+        <div class="game-controls">
+            <button class="control-btn help-btn" id="helpBtn"><i class="fas fa-question-circle"></i> Ayuda</button>
+            <button class="control-btn inventory-btn" id="inventoryBtn"><i class="fas fa-briefcase"></i>
+                Inventario</button>
+            <button class="control-btn boost-btn" id="boostBtn"><i class="fas fa-bolt"></i> Turbo</button>
+        </div>
+    </div>
+
+    <div class="hint-text">Toca el dado para lanzar o sacude tu teléfono</div>
+
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-content">
+            <h2>Modo Contrareloj - Super Carreras Paraguay</h2>
+            <div class="tutorial-step">
+                <p>1. Completa 3 vueltas en el menor tiempo posible.</p>
+            </div>
+            <div class="tutorial-step">
+                <p>2. Usa power-ups estratégicamente para mejorar tu tiempo.</p>
+            </div>
+            <div class="tutorial-step">
+                <p>3. El clima afectará tu rendimiento - elige sabiamente.</p>
+            </div>
+            <div class="tutorial-step">
+                <p>4. Intenta superar tu mejor marca personal.</p>
+            </div>
+            <button class="control-btn" onclick="closeTutorial()">Comenzar</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    <script>
+        // Configuración inicial
+        const track = document.getElementById('track');
+        const dice = document.getElementById('dice');
+        const turnDisplay = document.getElementById('turn');
+        const trackType = document.getElementById('trackType');
+        const player1NameDisplay = document.getElementById('player1Name');
+        const player1ColorIcon = document.getElementById('player1Color');
+        const status1 = document.getElementById('status1');
+        const progress = document.getElementById('progress');
+        const currentLapDisplay = document.getElementById('currentLap');
+        const totalLapsDisplay = document.getElementById('totalLaps');
+        const miniMap = document.getElementById('miniMap');
+        const weatherEffects = document.getElementById('weatherEffects');
+        const weatherNormal = document.getElementById('weatherNormal');
+        const weatherRain = document.getElementById('weatherRain');
+        const weatherSnow = document.getElementById('weatherSnow');
+        const helpBtn = document.getElementById('helpBtn');
+        const inventoryBtn = document.getElementById('inventoryBtn');
+        const boostBtn = document.getElementById('boostBtn');
+        const powerUpsContainer = document.getElementById('powerUps');
+        const tutorialOverlay = document.getElementById('tutorialOverlay');
+
+        // Elementos del modo contrareloj
+        const timeDisplay = document.getElementById('timeDisplay');
+        const bestTimeDisplay = document.getElementById('bestTime');
+        const timeTrialBtn = document.getElementById('timeTrialBtn');
+
+        const cells = [];
+        const miniCells = [];
+        const totalCells = 36;
+        const path = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            19, 29, 39, 49, 59, 69, 79, 89,
+            98, 97, 96, 95, 94, 93, 92, 91, 90,
+            80, 70, 60, 50, 40, 30, 20, 10
+        ];
+
+        // Variables para el modo contrareloj
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isTimeTrialActive = false;
+        let bestTime = localStorage.getItem('bestTime') || null;
+
+        // Variables del juego
+        let positions = [0];
+        let totalSteps = [0];
+        let playerNames = ['Jugador'];
+        let playerColors = ['#ff0000'];
+        let skipTurns = [0];
+        let boostActive = [false];
+        let shieldActive = [false];
+        let itemInventory = [[]];
+        let laps = [1];
+        let totalLaps = 3;
+        let gameEnded = false;
+        let isShaking = false;
+        let lastSteps = 0;
+        let currentWeather = 'normal';
+        let raindrops = [];
+        let snowflakes = [];
+        let traps = [];
+        let carCondition = [100];
+        let repairActive = [false];
+        let fuel = [100];
+
+        // Sonidos
+        const moveSound = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
+        const winSound = new Audio('https://www.soundjay.com/misc/sounds/crowd-cheer-01.mp3');
+        const penaltySound = new Audio('https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3');
+        const diceSound = new Audio('https://www.soundjay.com/misc/sounds/dice-roll-01.mp3');
+        const coinSound = new Audio('https://www.soundjay.com/misc/sounds/coins-to-table-2.mp3');
+        const advanceSound = new Audio('https://www.soundjay.com/transportation/sounds/car-locked-honk-1.mp3');
+        const reverseSound = new Audio('https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3');
+        const boostSound = new Audio('https://www.soundjay.com/mechanical/sounds/car-driving-02.mp3');
+        const shieldSound = new Audio('https://www.soundjay.com/buttons/sounds/button-30.mp3');
+        const repairSound = new Audio('https://www.soundjay.com/mechanical/sounds/car-ignition-1.mp3');
+        const explosionSound = new Audio('https://www.soundjay.com/mechanical/sounds/explosion-03.mp3');
+        const rainSound = new Audio('https://www.soundjay.com/nature/sounds/rain-07.mp3');
+        rainSound.loop = true;
+
+        // Preguntas
+        const paraguayQuestions = [
+            { question: '¿En qué año Paraguay obtuvo su independencia?', options: ['1811', '1808', '1821', '1816'], correct: '1811' },
+            { question: '¿Quién fue el primer presidente de Paraguay?', options: ['José Gaspar Rodríguez de Francia', 'Carlos Antonio López', 'Francisco Solano López', 'Juan Gualberto González'], correct: 'José Gaspar Rodríguez de Francia' },
+            { question: '¿Qué guerra enfrentó Paraguay entre 1864 y 1870?', options: ['Guerra del Chaco', 'Guerra de la Triple Alianza', 'Guerra del Pacífico', 'Guerra Guaraní'], correct: 'Guerra de la Triple Alianza' },
+            { question: '¿Cuál es la capital de Paraguay?', options: ['Asunción', 'Encarnación', 'Ciudad del Este', 'Luque'], correct: 'Asunción' },
+            { question: '¿Qué idioma indígena es cooficial en Paraguay junto con el español?', options: ['Quechua', 'Aymara', 'Guaraní', 'Tupi'], correct: 'Guaraní' }
+        ];
+
+        const musicQuestions = [
+            { question: '¿Qué género musical es conocido como "música folklórica paraguaya"?', options: ['Polca paraguaya', 'Samba', 'Tango', 'Cumbia'], correct: 'Polca paraguaya' },
+            { question: '¿Qué instrumento es icónico en la música tradicional paraguaya?', options: ['Arpa paraguaya', 'Bandoneón', 'Charango', 'Cajón'], correct: 'Arpa paraguaya' },
+            { question: '¿Quién compuso la famosa canción paraguaya "Pájaro Campana"?', options: ['Félix Pérez Cardozo', 'José Asunción Flores', 'Agustín Barrios', 'Luis Alberto del Paraná'], correct: 'Félix Pérez Cardozo' },
+            { question: '¿Qué estilo musical creó José Asunción Flores?', options: ['Guarania', 'Chamamé', 'Ranchera', 'Vallenato'], correct: 'Guarania' },
+            { question: '¿Qué grupo paraguayo es famoso por interpretar canciones como "Recuerdos de Ypacaraí"?', options: ['Los Paraguayos', 'Los Kjarkas', 'Inti-Illimani', 'Los Calchakis'], correct: 'Los Paraguayos' }
+        ];
+
+        // Funciones para el modo contrareloj
+        function formatTime(ms) {
+            let date = new Date(ms);
+            let minutes = date.getUTCMinutes().toString().padStart(2, '0');
+            let seconds = date.getUTCSeconds().toString().padStart(2, '0');
+            let milliseconds = Math.floor(date.getUTCMilliseconds() / 10).toString().padStart(2, '0');
+            return `${minutes}:${seconds}.${milliseconds}`;
+        }
+
+        function startTimer() {
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(function () {
+                elapsedTime = Date.now() - startTime;
+                timeDisplay.textContent = formatTime(elapsedTime);
+            }, 10);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            // Guardar el mejor tiempo si es necesario
+            if (!bestTime || elapsedTime < bestTime) {
+                bestTime = elapsedTime;
+                localStorage.setItem('bestTime', bestTime);
+                bestTimeDisplay.textContent = `Mejor tiempo: ${formatTime(bestTime)}`;
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            elapsedTime = 0;
+            timeDisplay.textContent = "00:00.00";
+        }
+
+        function startTimeTrial() {
+            isTimeTrialActive = true;
+            timeTrialBtn.textContent = "Carrera en curso";
+            timeTrialBtn.classList.add("time-trial-active");
+            resetTimer();
+            startTimer();
+            resetGame();
+            turnDisplay.textContent = "¡Comienza!";
+        }
+
+        function endTimeTrial() {
+            isTimeTrialActive = false;
+            timeTrialBtn.textContent = "Iniciar Contrareloj";
+            timeTrialBtn.classList.remove("time-trial-active");
+            stopTimer();
+        }
+
+        // Evento para el botón de contrareloj
+        timeTrialBtn.addEventListener('click', function () {
+            if (!isTimeTrialActive) {
+                startTimeTrial();
+            } else {
+                Swal.fire({
+                    title: '¿Terminar carrera?',
+                    text: '¿Estás seguro de que quieres finalizar la carrera contrareloj?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, terminar',
+                    cancelButtonText: 'Continuar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        endTimeTrial();
+                    }
+                });
+            }
+        });
+
+        // Mostrar mejor tiempo al cargar
+        if (bestTime) {
+            bestTimeDisplay.textContent = `Mejor tiempo: ${formatTime(parseInt(bestTime))}`;
+        }
+
+        //combustible
+        function updateFuelDisplay(player) {
+            document.getElementById(`fuel${player}`).textContent = `${Math.round(fuel[player - 1])}%`;
+        }
+
+        // Tutorial
+        function showTutorial() {
+            tutorialOverlay.style.display = 'flex';
+        }
+
+        function closeTutorial() {
+            tutorialOverlay.style.display = 'none';
+        }
+
+        // Solicitar nombre y color del jugador
+        async function getPlayerDetails() {
+            const { value } = await Swal.fire({
+                title: 'Configura tu perfil',
+                html: `
+                    <div style="display: flex; flex-direction: column; gap: 4px; padding: 5px; max-width: 220px; margin: auto;">
+                        <label for="player1" style="font-size: 11px; font-weight: bold; color: #333; margin-bottom: 2px;">Tu nombre:</label>
+                        <input id="player1" class="swal2-input" placeholder="Jugador" style="width: 100%; padding: 4px; font-size: 11px;">
+                        <label for="color1" style="font-size: 11px; font-weight: bold; color: #333; margin-bottom: 2px;">Color del auto:</label>
+                        <input type="color" id="color1" value="#ff0000" style="width: 30px; height: 16px;">
+                    </div>
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    return {
+                        name: document.getElementById('player1').value || 'Jugador',
+                        color: document.getElementById('color1').value
+                    };
+                }
+            });
+            if (value) {
+                playerNames = [value.name];
+                playerColors = [value.color];
+                player1NameDisplay.textContent = playerNames[0];
+                player1ColorIcon.style.color = playerColors[0];
+                turnDisplay.textContent = "Preparado";
+            }
+        }
+
+        // Cambiar tipo de pista
+        trackType.addEventListener('change', () => {
+            track.classList.remove('track-night', 'track-wet', 'track-rally', 'track-snowy');
+            if (trackType.value !== 'default') {
+                track.classList.add(`track-${trackType.value}`);
+            }
+        });
+
+        // Efectos climáticos
+        function startRain() {
+            rainSound.play();
+            currentWeather = 'rain';
+            weatherNormal.classList.remove('active');
+            weatherSnow.classList.remove('active');
+            weatherRain.classList.add('active');
+            for (let i = 0; i < 50; i++) {
+                createRaindrop();
+            }
+            setInterval(() => {
+                if (currentWeather === 'rain') createRaindrop();
+            }, 100);
+        }
+
+        function stopRain() {
+            rainSound.pause();
+            currentWeather = 'normal';
+            raindrops.forEach(r => r.remove());
+            raindrops = [];
+        }
+
+        function createRaindrop() {
+            const raindrop = document.createElement('div');
+            raindrop.classList.add('rain');
+            raindrop.style.left = Math.random() * track.offsetWidth + 'px';
+            raindrop.style.height = Math.random() * 20 + 10 + 'px';
+            raindrop.style.top = '-50px';
+            weatherEffects.appendChild(raindrop);
+            raindrops.push(raindrop);
+            animateRaindrop(raindrop);
+        }
+
+        function animateRaindrop(raindrop) {
+            let y = -50;
+            const speed = Math.random() * 5 + 5;
+            const interval = setInterval(() => {
+                y += speed;
+                raindrop.style.top = y + 'px';
+                if (y > track.offsetHeight) {
+                    clearInterval(interval);
+                    raindrop.remove();
+                    raindrops = raindrops.filter(r => r !== raindrop);
+                }
+            }, 20);
+        }
+
+        function startSnow() {
+            currentWeather = 'snow';
+            weatherNormal.classList.remove('active');
+            weatherRain.classList.remove('active');
+            weatherSnow.classList.add('active');
+            for (let i = 0; i < 30; i++) {
+                createSnowflake();
+            }
+            setInterval(() => {
+                if (currentWeather === 'snow') createSnowflake();
+            }, 200);
+        }
+
+        function stopSnow() {
+            currentWeather = 'normal';
+            snowflakes.forEach(s => s.remove());
+            snowflakes = [];
+        }
+
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snow');
+            snowflake.style.left = Math.random() * track.offsetWidth + 'px';
+            snowflake.style.top = '-50px';
+            weatherEffects.appendChild(snowflake);
+            snowflakes.push(snowflake);
+            animateSnowflake(snowflake);
+        }
+
+        function animateSnowflake(snowflake) {
+            let y = -50;
+            const speed = Math.random() * 2 + 2;
+            const sway = Math.random() * 20 - 10;
+            const interval = setInterval(() => {
+                y += speed;
+                snowflake.style.top = y + 'px';
+                snowflake.style.left = parseFloat(snowflake.style.left) + Math.sin(y / 50) * sway + 'px';
+                if (y > track.offsetHeight) {
+                    clearInterval(interval);
+                    snowflake.remove();
+                    snowflakes = snowflakes.filter(s => s !== snowflake);
+                }
+            }, 20);
+        }
+
+        weatherNormal.addEventListener('click', () => {
+            stopRain();
+            stopSnow();
+            weatherNormal.classList.add('active');
+            weatherRain.classList.remove('active');
+            weatherSnow.classList.remove('active');
+            currentWeather = 'normal';
+        });
+
+        weatherRain.addEventListener('click', () => {
+            stopSnow();
+            startRain();
+        });
+
+        weatherSnow.addEventListener('click', () => {
+            stopRain();
+            startSnow();
+        });
+
+        // Crear la pista
+        function createTrack() {
+            const trapsTemplate = [
+                { type: 'mud', icon: '💩' },
+                { type: 'water', icon: '💧' },
+                { type: 'history-quiz', icon: '📘' },
+                { type: 'oil', icon: '🛢️' },
+                { type: 'music-quiz', icon: '🎵' },
+                { type: 'fire', icon: '🔥' },
+                { type: 'police', icon: '👮' },
+                { type: 'animal_bad', icon: '🐒' },
+                { type: 'animal_good', icon: '🐰' },
+                { type: 'ramp', icon: '🔼' },
+                { type: 'tire-change', icon: '🚗' },
+                { type: 'turbo', icon: '⚡' },
+                { type: 'detour', icon: '↩️' },
+                { type: 'animal_rescue', icon: '🐶' },
+                { type: 'shop', icon: '🛒' },
+                { type: 'bonus', icon: '⭐' },
+                { type: 'event', icon: '🎉' },
+                {
+                    type: 'fuel',
+                    icon: '⛽',
+                    effect: 'Recarga 20% de combustible',
+                    action: (player) => {
+                        fuel[player - 1] = Math.min(100, fuel[player - 1] + 20);
+                        updateFuelDisplay(player);
+                        Toastify({
+                            text: `Recargaste 20% de combustible!`,
+                            duration: 3000,
+                            style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                        }).showToast();
+                    }
+                }
+            ];
+
+            const availableIndices = Array.from({ length: 35 }, (_, i) => i + 1);
+            for (let i = availableIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
+            }
+            traps = trapsTemplate.slice(0, Math.min(trapsTemplate.length, availableIndices.length)).map((trap, i) => ({
+                ...trap,
+                index: availableIndices[i]
+            }));
+
+            for (let i = 0; i < 100; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                if (path.includes(i)) {
+                    const pathIndex = path.indexOf(i);
+                    cell.dataset.index = pathIndex;
+                    cell.innerHTML = `<span class="number">${pathIndex}</span>`;
+                    if (pathIndex === 0) {
+                        cell.classList.add('start');
+                        cell.innerHTML += '🏁';
+                    }
+                    traps.forEach(trap => {
+                        if (pathIndex === trap.index) {
+                            cell.classList.add(trap.type);
+                            cell.innerHTML = `<span class="number">${pathIndex}</span>${trap.icon}`;
+                        }
+                    });
+                } else {
+                    cell.style.background = '#999';
+                }
+                track.appendChild(cell);
+                cells.push(cell);
+            }
+
+            // Crear minimapa
+            for (let i = 0; i < 100; i++) {
+                const miniCell = document.createElement('div');
+                miniCell.classList.add('mini-cell');
+                if (path.includes(i)) {
+                    miniCell.classList.add('path');
+                    if (i === path[0]) miniCell.classList.add('start');
+                }
+                miniMap.appendChild(miniCell);
+                miniCells.push(miniCell);
+            }
+
+            // Colocar auto
+            const car1 = document.createElement('div');
+            car1.classList.add('car', 'car1');
+            car1.innerHTML = '<i class="fa-solid fa-car-side"></i>';
+            car1.style.color = playerColors[0];
+            track.appendChild(car1);
+
+            // Auto en minimapa
+            const miniCar1 = document.createElement('div');
+            miniCar1.classList.add('mini-car');
+            miniCar1.style.backgroundColor = playerColors[0];
+            miniMap.appendChild(miniCar1);
+
+            // Posicionar auto inicialmente
+            moveCarToPosition(1, 0, 0);
+        }
+
+        // Obtener rotación
+        function getRotation(pos) {
+            if (pos >= 0 && pos <= 9) return 0;
+            if (pos >= 10 && pos <= 17) return 90;
+            if (pos >= 18 && pos <= 26) return 180;
+            return 270;
+        }
+
+        // Calcular coordenadas
+        function getCellCoordinates(pos) {
+            const cellSize = window.innerWidth <= 600 ? 32 : 50;
+            const gap = window.innerWidth <= 600 ? 1 : 2;
+            const padding = window.innerWidth <= 600 ? 5 : 8;
+            const cellIndex = path[pos];
+            const row = Math.floor(cellIndex / 10);
+            const col = cellIndex % 10;
+            const x = col * (cellSize + gap) + padding + (cellSize / 2);
+            const y = row * (cellSize + gap) + padding + (cellSize / 2);
+            return { x, y };
+        }
+
+        // Coordenadas para minimapa
+        function getMiniMapCoordinates(pos) {
+            const cellSize = window.innerWidth <= 600 ? 8 : 10;
+            const gap = 1;
+            const padding = 2;
+            const cellIndex = path[pos];
+            const row = Math.floor(cellIndex / 10);
+            const col = cellIndex % 10;
+            const x = col * (cellSize + gap) + padding + (cellSize / 2) - 4;
+            const y = row * (cellSize + gap) + padding + (cellSize / 2) - 4;
+            return { x, y };
+        }
+
+        // Lanzar dado
+        function rollDice() {
+            if (!isTimeTrialActive) {
+                Toastify({
+                    text: 'Primero inicia el modo contrareloj',
+                    duration: 3000,
+                    style: { background: '#ff9800', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                return;
+            }
+
+            if (gameEnded || isShaking || skipTurns[0] > 0) {
+                if (skipTurns[0] > 0) {
+                    Toastify({
+                        text: `Pierdes el turno (${skipTurns[0]} restantes)`,
+                        duration: 2000,
+                        style: { background: '#ff9800', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                    }).showToast();
+                    skipTurns[0]--;
+                }
+                return;
+            }
+
+            isShaking = true;
+            diceSound.play();
+            let roll = Math.floor(Math.random() * 6) + 1;
+            if (currentWeather === 'rain') roll = Math.max(1, roll - 1);
+            if (currentWeather === 'snow') roll = Math.max(1, roll - 2);
+            if (boostActive[0]) roll += 2;
+
+            const diceFace = document.querySelector('.dice-face');
+
+            // Animación de rotación para el dado (emoji)
+            let rotationCount = 0;
+            const maxRotations = 3;
+            const rotationInterval = setInterval(() => {
+                rotationCount++;
+                const angle = rotationCount * 360;
+                diceFace.style.transform = `rotate(${angle}deg)`;
+                if (rotationCount >= maxRotations) {
+                    clearInterval(rotationInterval);
+                    diceFace.style.transform = 'rotate(0deg)';
+                    Toastify({
+                        text: `Sacaste un ${roll}`,
+                        duration: 2000,
+                        style: { background: '#2ecc71', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                    }).showToast();
+                    setTimeout(() => {
+                        lastSteps = roll;
+                        moveCar(1, roll);
+                        isShaking = false;
+                    }, 500);
+                }
+            }, 200);
+        }
+
+        // Sacudida en móvil
+        function setupShakeDetection() {
+            if (window.DeviceMotionEvent) {
+                let lastX, lastY, lastZ;
+                let lastTime = 0;
+                const shakeThreshold = 15;
+                window.addEventListener('devicemotion', (event) => {
+                    if (isShaking || !isTimeTrialActive) return;
+                    const { x, y, z } = event.accelerationIncludingGravity;
+                    const currentTime = new Date().getTime();
+                    if (lastX !== undefined && currentTime - lastTime > 100) {
+                        const diffX = Math.abs(x - lastX);
+                        const diffY = Math.abs(y - lastY);
+                        const diffZ = Math.abs(z - lastZ);
+                        if (diffX > shakeThreshold || diffY > shakeThreshold || diffZ > shakeThreshold) {
+                            rollDice();
+                            lastTime = currentTime;
+                        }
+                    }
+                    lastX = x;
+                    lastY = y;
+                    lastZ = z;
+                });
+                if (window.innerWidth <= 600) {
+                    Toastify({
+                        text: '¡Sacude el teléfono para tirar el dado!',
+                        duration: 3000,
+                        style: { background: '#4caf50', fontSize: '12px' }
+                    }).showToast();
+                }
+            }
+        }
+
+        // Mover auto
+        function moveCar(player, steps) {
+            let currentPos = positions[player - 1];
+            totalSteps[player - 1] += steps;
+
+            function moveStep(step) {
+                if (step <= 0 || fuel[player - 1] <= 0) {
+                    if (fuel[player - 1] <= 0) {
+                        Toastify({
+                            text: `¡Te quedaste sin combustible! Pierdes el turno.`,
+                            duration: 3000,
+                            style: { background: '#ff4444', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                        }).showToast();
+                        return;
+                    }
+                    positions[player - 1] = currentPos;
+                    const cell = cells.find(c => c.dataset.index == currentPos);
+                    checkCell(player, currentPos, cell);
+                    return;
+                }
+                fuel[player - 1] = Math.max(0, fuel[player - 1] - 2); // 2% por casilla
+                updateFuelDisplay(player);
+
+                // Actualizar posición
+                currentPos = (currentPos + 1) % totalCells;
+                if (currentPos === 0) {
+                    laps[player - 1]++;
+                    currentLapDisplay.textContent = laps[player - 1];
+
+                    // Verificar si se completaron todas las vueltas
+                    if (laps[player - 1] > totalLaps) {
+                        checkVictory();
+                        return;
+                    }
+                }
+
+                // Mover auto en el tablero
+                const { x, y } = getCellCoordinates(currentPos);
+                const car = document.querySelector(`.car${player}`);
+                const rotation = getRotation(currentPos);
+                car.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+
+                // Mover marcador en el minimapa
+                const { x: miniX, y: miniY } = getMiniMapCoordinates(currentPos);
+                const miniCar = document.querySelectorAll('.mini-car')[player - 1];
+                miniCar.style.transform = `translate(${miniX}px, ${miniY}px)`;
+
+                // Reproducir sonidos
+                advanceSound.play();
+                try {
+                    moveSound.currentTime = 0;
+                    moveSound.play().catch(e => {
+                        console.warn('No se pudo reproducir el sonido del auto:', e.message);
+                    });
+                } catch (e) {
+                    console.warn('Error al intentar reproducir el sonido del auto:', e.message);
+                }
+
+                // Actualizar progreso y continuar
+                updateProgress(player);
+                setTimeout(() => moveStep(step - 1), 1000);
+            }
+            moveStep(steps);
+        }
+
+        // Mover a posición específica
+        function moveCarToPosition(player, newPos, additionalSteps) {
+            const oldPos = positions[player - 1];
+            positions[player - 1] = newPos;
+            totalSteps[player - 1] += additionalSteps;
+            if (newPos === 0 && additionalSteps > 0) {
+                laps[player - 1]++;
+                currentLapDisplay.textContent = laps[player - 1];
+
+                // Verificar si se completaron todas las vueltas
+                if (laps[player - 1] > totalLaps) {
+                    checkVictory();
+                    return;
+                }
+            }
+            const { x, y } = getCellCoordinates(newPos);
+            const car = document.querySelector(`.car${player}`);
+            const rotation = getRotation(newPos);
+            car.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+            const { x: miniX, y: miniY } = getMiniMapCoordinates(newPos);
+            const miniCar = document.querySelectorAll('.mini-car')[player - 1];
+            miniCar.style.transform = `translate(${miniX}px, ${miniY}px)`;
+
+            // Reproducir sonidos según el tipo de movimiento
+            if (additionalSteps < 0) {
+                reverseSound.play().catch(e => {
+                    console.warn('No se pudo reproducir el sonido de retroceso:', e.message);
+                });
+                setTimeout(() => {
+                    reverseSound.pause();
+                    reverseSound.currentTime = 0;
+                }, 500);
+            } else if (additionalSteps > 0) {
+                moveSound.play();
+                try {
+                    moveSound.currentTime = 0;
+                    moveSound.play().catch(e => {
+                        console.warn('No se pudo reproducir el sonido del auto:', e.message);
+                    });
+                } catch (e) {
+                    console.warn('Error al intentar reproducir el sonido del auto:', e.message);
+                }
+            } else {
+                moveSound.play();
+            }
+
+            updateProgress(player);
+        }
+
+        // Actualizar barra de progreso
+        function updateProgress(player) {
+            const progressPercent = Math.min((totalSteps[player - 1] / (totalCells * totalLaps)) * 100, 100);
+            progress.style.width = `${progressPercent}%`;
+        }
+
+        // Verificar victoria
+        function checkVictory() {
+            if (!isTimeTrialActive) return;
+
+            gameEnded = true;
+            stopTimer();
+
+            // Mostrar resultados
+            const finalTime = elapsedTime;
+            const isNewRecord = !bestTime || finalTime < bestTime;
+
+            if (isNewRecord) {
+                bestTime = finalTime;
+                localStorage.setItem('bestTime', bestTime);
+                bestTimeDisplay.textContent = `Mejor tiempo: ${formatTime(bestTime)}`;
+
+                winSound.play();
+                const jsConfetti = new JSConfetti();
+                jsConfetti.addConfetti({ emojis: ['🏆', '🚗', '🎉'], confettiNumber: 100 });
+
+                Swal.fire({
+                    title: '¡Nuevo récord!',
+                    html: `Completaste las ${totalLaps} vueltas en <strong>${formatTime(finalTime)}</strong>`,
+                    icon: 'success',
+                    confirmButtonText: '¡Genial!'
+                });
+            } else {
+                Swal.fire({
+                    title: '¡Carrera completada!',
+                    html: `Tiempo: ${formatTime(finalTime)}<br>Mejor récord: ${formatTime(bestTime)}`,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+
+            // Reiniciar el juego después de mostrar resultados
+            setTimeout(resetGame, 3000);
+        }
+
+        // Reiniciar el juego
+        function resetGame() {
+            // Resetear variables del juego
+            positions = [0];
+            totalSteps = [0];
+            skipTurns = [0];
+            boostActive = [false];
+            shieldActive = [false];
+            laps = [1];
+            gameEnded = false;
+            carCondition = [100];
+            fuel = [100];
+
+            // Actualizar displays
+            currentLapDisplay.textContent = '1';
+            updateProgress(1);
+            updateFuelDisplay(1);
+            updateStatusEffects(1);
+
+            // Reposicionar el auto
+            moveCarToPosition(1, 0, 0);
+
+            // Reiniciar power-ups
+            document.querySelectorAll('.power-up').forEach(powerUp => {
+                powerUp.classList.add('disabled');
+            });
+
+            // Mostrar mensaje
+            turnDisplay.textContent = "Preparado";
+        }
+
+        function checkCell(player, pos, cell) {
+            const trap = traps.find(t => t.index === pos);
+            if (trap) {
+                trap.action(player);
+                if (trap.type === 'water') {
+                    createSplashEffect(cell);
+                }
+            }
+        }
+
+        function createSplashEffect(cell) {
+            const splash = document.createElement('div');
+            splash.className = 'splash-effect';
+            cell.appendChild(splash);
+            setTimeout(() => splash.remove(), 1000);
+        }
+
+        // Actualizar efectos de estado
+        function updateStatusEffects(player) {
+            const statusElement = status1;
+            statusElement.innerHTML = '';
+
+            if (skipTurns[player - 1] > 0) {
+                const skip = document.createElement('span');
+                skip.classList.add('status-effect', 'negative');
+                skip.innerHTML = `<i class="fas fa-pause"></i> Pierde ${skipTurns[player - 1]} turno(s)`;
+                statusElement.appendChild(skip);
+            }
+
+            if (shieldActive[player - 1]) {
+                const shield = document.createElement('span');
+                shield.classList.add('status-effect', 'positive');
+                shield.innerHTML = `<i class="fas fa-shield-alt"></i> Escudo`;
+                statusElement.appendChild(shield);
+            }
+
+            if (boostActive[player - 1]) {
+                const boost = document.createElement('span');
+                boost.classList.add('status-effect', 'positive');
+                boost.innerHTML = `<i class="fas fa-bolt"></i> Nitro`;
+                statusElement.appendChild(boost);
+            }
+
+            if (carCondition[player - 1] < 80) {
+                const condition = document.createElement('span');
+                condition.classList.add('status-effect', 'negative');
+                condition.innerHTML = `<i class="fas fa-car-crash"></i> Daño ${carCondition[player - 1]}%`;
+                statusElement.appendChild(condition);
+            }
+        }
+
+        // Usar power-up
+        powerUpsContainer.addEventListener('click', async (e) => {
+            if (!isTimeTrialActive) {
+                Toastify({
+                    text: 'Primero inicia el modo contrareloj',
+                    duration: 3000,
+                    style: { background: '#ff9800', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                return;
+            }
+
+            const powerUp = e.target.closest('.power-up');
+            if (!powerUp || powerUp.classList.contains('disabled') || gameEnded) return;
+
+            const type = powerUp.dataset.type;
+            if (!itemInventory[0].includes(type)) return;
+
+            itemInventory[0] = itemInventory[0].filter(item => item !== type);
+            powerUp.classList.add('disabled');
+
+            if (type === 'shield') {
+                shieldActive[0] = true;
+                shieldSound.play();
+                Toastify({
+                    text: `¡Escudo activado!`,
+                    duration: 3000,
+                    style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            } else if (type === 'boost') {
+                boostActive[0] = true;
+                boostSound.play();
+                Toastify({
+                    text: `¡Nitro activado!`,
+                    duration: 3000,
+                    style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            } else if (type === 'repair') {
+                carCondition[0] = 100;
+                repairSound.play();
+                Toastify({
+                    text: `¡Auto reparado!`,
+                    duration: 3000,
+                    style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            } else if (type === 'teleport') {
+                const newPos = Math.floor(Math.random() * totalCells);
+                moveCarToPosition(1, newPos, newPos - positions[0]);
+                Toastify({
+                    text: `¡Teletransportado a la casilla ${newPos}!`,
+                    duration: 3000,
+                    style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+            }
+        });
+
+        // Verificar casilla
+        async function checkCell(player, pos, cell) {
+            let message = '';
+            let bgColor = '#2196f3';
+            let moveToPos = null;
+            let moveSteps = 0;
+            let damage = 0;
+
+            // Efectos climáticos
+            if (currentWeather === 'rain' && Math.random() < 0.3 && !shieldActive[0]) {
+                damage = 10;
+                carCondition[0] -= damage;
+                message = '¡Lluvia resbaladiza! Pierdes 10% de condición.';
+                bgColor = '#ff9800';
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    style: { background: bgColor, fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            } else if (currentWeather === 'snow' && Math.random() < 0.4 && !shieldActive[0]) {
+                skipTurns[0] = 1;
+                message = '¡Nieve pesada! Pierdes un turno.';
+                bgColor = '#ff9800';
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    style: { background: bgColor, fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            }
+
+            // Casillas especiales
+            if (cell.classList.contains('mud')) {
+                if (!shieldActive[0]) {
+                    skipTurns[0] = 1;
+                    damage = 10;
+                    carCondition[0] -= damage;
+                    message = '¡Charco de lodo! Pierdes un turno y 10% de condición.';
+                    bgColor = '#ff9800';
+                    penaltySound.play();
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo bloqueó el lodo!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('water')) {
+                if (!shieldActive[0]) {
+                    moveToPos = Math.max(0, pos - 2);
+                    moveSteps = -2;
+                    damage = 5;
+                    carCondition[0] -= damage;
+                    message = '¡Charco de agua! Retrocedes 2 casillas y pierdes 5% de condición.';
+                    bgColor = '#ff9800';
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo bloqueó el agua!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('oil')) {
+                if (!shieldActive[0]) {
+                    moveToPos = Math.max(0, pos - 3);
+                    moveSteps = -3;
+                    damage = 10;
+                    carCondition[0] -= damage;
+                    message = '¡Charco de aceite! Retrocedes 3 casillas y pierdes 10% de condición.';
+                    bgColor = '#ff9800';
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo bloqueó el aceite!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('fire')) {
+                if (!shieldActive[0]) {
+                    skipTurns[0] = 2;
+                    damage = 20;
+                    carCondition[0] -= damage;
+                    message = '¡Incendio! Pierdes 2 turnos y 20% de condición.';
+                    bgColor = '#f44336';
+                    penaltySound.play();
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo bloqueó el incendio!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('police')) {
+                if (!shieldActive[0]) {
+                    skipTurns[0] = 2;
+                    message = '¡Infracción! Pierdes 2 turnos.';
+                    bgColor = '#f44336';
+                    penaltySound.play();
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo evitó la infracción!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('animal_bad')) {
+                if (!shieldActive[0]) {
+                    moveToPos = Math.max(0, pos - 5);
+                    moveSteps = -5;
+                    damage = 15;
+                    carCondition[0] -= damage;
+                    message = '¡Mono travieso! Retrocedes 5 casillas y pierdes 15% de condición.';
+                    bgColor = '#ff9800';
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo bloqueó al mono!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('animal_good')) {
+                moveToPos = (pos + 5) % totalCells;
+                moveSteps = 5;
+                message = '¡Conejo veloz! Avanzas 5 casillas.';
+                bgColor = '#4caf50';
+                moveCarToPosition(player, moveToPos, moveSteps);
+            } else if (cell.classList.contains('ramp')) {
+                moveToPos = (pos + 7) % totalCells;
+                moveSteps = 7;
+                message = '¡Rampa! Saltas 7 casillas.';
+                bgColor = '#4caf50';
+                moveCarToPosition(player, moveToPos, moveSteps);
+            } else if (cell.classList.contains('turbo')) {
+                moveToPos = (pos + 10) % totalCells;
+                moveSteps = 10;
+                message = '¡Turbo! Avanzas 10 casillas.';
+                bgColor = '#4caf50';
+                moveCarToPosition(player, moveToPos, moveSteps);
+            } else if (cell.classList.contains('detour')) {
+                if (!shieldActive[0]) {
+                    moveToPos = Math.max(0, pos - 5);
+                    moveSteps = -5;
+                    message = '¡Desvío! Retrocedes 5 casillas.';
+                    bgColor = '#ff9800';
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo evitó el desvío!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('animal_rescue')) {
+                moveToPos = (pos + 8) % totalCells;
+                moveSteps = 8;
+                message = '¡Perro rescatador! Avanzas 8 casillas.';
+                bgColor = '#4caf50';
+                moveCarToPosition(player, moveToPos, moveSteps);
+            } else if (cell.classList.contains('tire-change')) {
+                if (!shieldActive[0]) {
+                    moveToPos = Math.max(0, pos - 3);
+                    moveSteps = -3;
+                    damage = 10;
+                    carCondition[0] -= damage;
+                    message = '¡Recambio de cubiertas! Retrocedes 3 casillas y pierdes 10% de condición.';
+                    bgColor = '#ff9800';
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    shieldActive[0] = false;
+                    message = '¡El escudo evitó el recambio!';
+                    bgColor = '#4caf50';
+                    shieldSound.play();
+                }
+            } else if (cell.classList.contains('history-quiz')) {
+                const quiz = paraguayQuestions[Math.floor(Math.random() * paraguayQuestions.length)];
+                const { value: answer } = await Swal.fire({
+                    title: 'Pregunta sobre la historia de Paraguay',
+                    text: quiz.question,
+                    input: 'radio',
+                    inputOptions: quiz.options.reduce((obj, opt) => ({ ...obj, [opt]: opt }), {}),
+                    inputValidator: (value) => !value && '¡Debes seleccionar una opción!'
+                });
+                if (answer) {
+                    if (answer === quiz.correct) {
+                        moveToPos = (pos + 5) % totalCells;
+                        moveSteps = 5;
+                        message = '¡Respuesta correcta! Avanzas 5 casillas.';
+                        bgColor = '#4caf50';
+                        moveCarToPosition(player, moveToPos, moveSteps);
+                    } else {
+                        moveToPos = Math.max(0, pos - 3);
+                        moveSteps = -3;
+                        message = '¡Respuesta incorrecta! Retrocedes 3 casillas.';
+                        bgColor = '#ff9800';
+                        moveCarToPosition(player, moveToPos, moveSteps);
+                    }
+                } else {
+                    message = '¡No respondiste! Pierdes el turno.';
+                    bgColor = '#ff9800';
+                    penaltySound.play();
+                }
+            } else if (cell.classList.contains('music-quiz')) {
+                const quiz = musicQuestions[Math.floor(Math.random() * musicQuestions.length)];
+                const { value: answer } = await Swal.fire({
+                    title: 'Pregunta sobre música',
+                    text: quiz.question,
+                    input: 'radio',
+                    inputOptions: quiz.options.reduce((obj, opt) => ({ ...obj, [opt]: opt }), {}),
+                    inputValidator: (value) => !value && '¡Debes seleccionar una opción!'
+                });
+                if (answer) {
+                    if (answer === quiz.correct) {
+                        moveToPos = (pos + 5) % totalCells;
+                        moveSteps = 5;
+                        message = '¡Respuesta correcta! Avanzas 5 casillas.';
+                        bgColor = '#4caf50';
+                        moveCarToPosition(player, moveToPos, moveSteps);
+                    } else {
+                        moveToPos = Math.max(0, pos - 3);
+                        moveSteps = -3;
+                        message = '¡Respuesta incorrecta! Retrocedes 3 casillas.';
+                        bgColor = '#ff9800';
+                        moveCarToPosition(player, moveToPos, moveSteps);
+                    }
+                } else {
+                    message = '¡No respondiste! Pierdes el turno.';
+                    bgColor = '#ff9800';
+                    penaltySound.play();
+                }
+            } else if (cell.classList.contains('shop')) {
+                const items = ['shield', 'boost', 'repair', 'teleport'];
+                const item = items[Math.floor(Math.random() * items.length)];
+                itemInventory[0].push(item);
+                message = `¡Tienda! Obtuviste un ${item}.`;
+                bgColor = '#4caf50';
+                coinSound.play();
+                document.querySelector(`.power-up[data-type="${item}"]`).classList.remove('disabled');
+            } else if (cell.classList.contains('bonus')) {
+                message = '¡Bono!';
+                bgColor = '#4caf50';
+                coinSound.play();
+            } else if (cell.classList.contains('event')) {
+                const events = [
+                    { effect: 'move', value: 3, message: '¡Evento especial! Avanzas 3 casillas.' },
+                    { effect: 'damage', value: -10, message: '¡Evento especial! Pierdes 10% de condición.' }
+                ];
+                const event = events[Math.floor(Math.random() * events.length)];
+                if (event.effect === 'move') {
+                    moveToPos = (pos + event.value) % totalCells;
+                    moveSteps = event.value;
+                    moveCarToPosition(player, moveToPos, moveSteps);
+                } else {
+                    damage = -event.value;
+                    carCondition[0] -= damage;
+                }
+                message = event.message;
+                bgColor = event.effect === 'damage' ? '#ff9800' : '#4caf50';
+            } else {
+                message = `Avanzaste ${lastSteps} casillas.`;
+                bgColor = '#2196f3';
+            }
+
+            // Actualizar condición del auto
+            if (damage > 0) {
+                carCondition[0] -= damage;
+                if (carCondition[0] <= 0) {
+                    gameEnded = true;
+                    stopTimer();
+                    Swal.fire({
+                        title: '¡Auto destruido!',
+                        text: 'Tu auto sufrió demasiados daños. La carrera ha terminado.',
+                        icon: 'error',
+                        confirmButtonText: 'Reintentar'
+                    }).then(() => {
+                        resetGame();
+                    });
+                    return;
+                }
+            }
+
+            updateStatusEffects(1);
+
+            // Mostrar notificación
+            if (message) {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    style: { background: bgColor, fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+            }
+        }
+
+        // Botones de control
+        helpBtn.addEventListener('click', showTutorial);
+
+        inventoryBtn.addEventListener('click', () => {
+            const items = itemInventory[0].length ? itemInventory[0].join(', ') : 'Vacío';
+            Swal.fire({
+                title: `Tu inventario`,
+                text: `Objetos: ${items}`,
+                icon: 'info'
+            });
+        });
+
+        boostBtn.addEventListener('click', () => {
+            if (!isTimeTrialActive) {
+                Toastify({
+                    text: 'Primero inicia el modo contrareloj',
+                    duration: 3000,
+                    style: { background: '#ff9800', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                return;
+            }
+
+            if (gameEnded || boostActive[0]) return;
+
+            if (itemInventory[0].includes('boost')) {
+                itemInventory[0] = itemInventory[0].filter(item => item !== 'boost');
+                boostActive[0] = true;
+                boostSound.play();
+                Toastify({
+                    text: `¡Nitro activado!`,
+                    duration: 3000,
+                    style: { background: '#4caf50', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+                updateStatusEffects(1);
+            } else {
+                Toastify({
+                    text: 'No tienes nitro en el inventario.',
+                    duration: 3000,
+                    style: { background: '#ff9800', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+                }).showToast();
+            }
+        });
+
+        // Inicializar
+        async function init() {
+            showTutorial();
+            await getPlayerDetails();
+            createTrack();
+            totalLapsDisplay.textContent = totalLaps;
+            dice.addEventListener('click', rollDice);
+            setupShakeDetection();
+            updateProgress(1);
+            updateStatusEffects(1);
+            updateFuelDisplay(1);
+
+            // Mostrar mensaje de bienvenida
+            Toastify({
+                text: `¡Bienvenido al modo contrareloj! Completa ${totalLaps} vueltas lo más rápido posible.`,
+                duration: 4000,
+                style: { background: '#2196f3', fontSize: window.innerWidth <= 600 ? '9px' : '14px' }
+            }).showToast();
+        }
+
+        // Iniciar el juego
+        init();
+    </script>
+</body>
+
+</html>
